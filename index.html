@@ -829,7 +829,15 @@ let DB=clone(DEFAULTS);
 try{const s=localStorage.getItem('mailab_db'); if(s){const p=JSON.parse(s); if(p&&p.papers&&p.people&&p.news&&p.patents)DB=p;}}catch(e){}
 ['news','people','papers','patents'].forEach(k=>{if(!Array.isArray(DB[k]))DB[k]=clone(DEFAULTS[k]);});
 if(!DB.prof||typeof DB.prof!=='object')DB.prof=clone(DEFAULTS.prof);
-function saveDB(){try{localStorage.setItem('mailab_db',JSON.stringify(DB));}catch(e){}}
+function saveDB(){
+  try{
+    localStorage.setItem('mailab_db',JSON.stringify(DB));
+    return true;
+  }catch(e){
+    toast('브라우저 저장 공간이 부족하여 임시 저장에 실패했습니다. 사진 용량을 줄이거나 곧바로 사이트 파일로 저장해 주세요.');
+    return false;
+  }
+}
 
 /* ---- admin auth (client-side password gate; publishing still requires re-upload) ---- */
 function sha256(ascii){
@@ -924,7 +932,7 @@ function renderPeople(){
   const groups=[...present,...extra];
   let html=groups.map(g=>{
     const rows=DB.people.map((p,idx)=>({p,idx})).filter(({p})=>p.group===g).map(({p,idx},i)=>`
-      <article class="pcard">${actionBtns('people',idx)}<div class="ph">${avatarSVG(i+g.length)}</div>
+      <article class="pcard">${actionBtns('people',idx)}<div class="ph">${p.photo?`<img src="${esc(p.photo)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`:avatarSVG(i+g.length)}</div>
         <div class="info"><div class="nm">${esc(p.name)}</div><div class="deg">${esc(p.deg)}</div>
           <div class="fo">${esc(p.focus)}</div>${p.now?`<div class="now">→ 현재: ${esc(p.now)}</div>`:''}</div></article>`).join('');
     return `<div class="grp-h">${esc(g)}</div><div class="people-grid">${rows}</div>`;
@@ -1057,6 +1065,7 @@ const SCHEMA={
   people:{title:'구성원', fields:[
     {k:'group',label:'구분',type:'select',opts:GROUP_ORDER},
     {k:'name',label:'이름',type:'text'},{k:'deg',label:'학위 / 직함  (예: Ph.D. Student, M.S. 2024)',type:'text'},
+    {k:'photo',label:'사진',type:'image'},
     {k:'focus',label:'연구 주제',type:'text'},{k:'now',label:'현재 소속  (졸업생만, 선택)',type:'text'}]},
   news:{title:'소식', fields:[
     {k:'date',label:'날짜  (예: 2026.06)',type:'text'},
@@ -1101,12 +1110,32 @@ function openForm(type, idx){
   const fileEl=$('#imgfile');
   if(fileEl){
     fileEl.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return;
-      const rd=new FileReader(); rd.onload=()=>{formCtx.img=rd.result; $('#imgprev').innerHTML=`<img src="${formCtx.img}">`; $('#imgurl').value='';}; rd.readAsDataURL(file);});
+      resizeImage(file).then(src=>{formCtx.img=src; $('#imgprev').innerHTML=`<img src="${src}">`; $('#imgurl').value='';})
+        .catch(()=>toast('이미지 파일을 읽지 못했습니다. 다른 파일을 선택해 주세요.'));});
     $('#imgurl').addEventListener('input',e=>{formCtx.img=e.target.value.trim(); $('#imgprev').innerHTML=formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기';});
   }
   $('#modal').classList.add('open');
 }
 function closeForm(){$('#modal').classList.remove('open');}
+function resizeImage(file){
+  return new Promise((resolve,reject)=>{
+    const rd=new FileReader();
+    rd.onerror=reject;
+    rd.onload=()=>{
+      const img=new Image(); img.onerror=reject;
+      img.onload=()=>{
+        const max=1000, scale=Math.min(1,max/Math.max(img.width,img.height));
+        if(scale===1&&file.size<350000){resolve(rd.result); return;}
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(img.width*scale)); canvas.height=Math.max(1,Math.round(img.height*scale));
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',.82));
+      };
+      img.src=rd.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
 function saveForm(){
   const {type,idx,single,storeKey,imgKey}=formCtx; const obj={};
   $$('#modal-fields [data-k]').forEach(el=>{
@@ -1122,7 +1151,8 @@ function saveForm(){
   if(imgKey) obj[imgKey]=formCtx.img||'';
   if(single) DB[storeKey]={...DB[storeKey],...obj};
   else if(idx!=null) DB[type][idx]={...DB[type][idx],...obj}; else DB[type].push(obj);
-  saveDB(); renderAll(); closeForm();
+  const stored=saveDB(); renderAll(); closeForm();
+  if(stored) toast('수정 내용이 이 브라우저에 임시 저장되었습니다. 공개 홈페이지 반영은 “사이트 파일로 저장” 후 서버에 재업로드해야 합니다.');
 }
 
 /* ---- global edit clicks ---- */
