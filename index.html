@@ -356,7 +356,7 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
   display:grid; place-items:center; color:var(--text-3); font-family:'IBM Plex Mono'; font-size:.8rem}
 .img-prev img{width:100%; height:100%; object-fit:cover}
 .crop-wrap{display:grid; gap:10px; width:min(100%,270px); margin:0 auto}
-.crop-canvas{width:100%; aspect-ratio:1/1; display:block; border-radius:10px; background:#eef5f1; cursor:grab; touch-action:none}
+.crop-canvas{width:100%; height:auto; display:block; border-radius:10px; background:#eef5f1; cursor:grab; touch-action:none}
 .crop-canvas.dragging{cursor:grabbing}
 .crop-tools{display:flex; align-items:center; gap:12px; font-family:'IBM Plex Mono'; font-size:.74rem; color:var(--text-2)}
 .crop-tools input{flex:1; accent-color:var(--green)}
@@ -1092,14 +1092,15 @@ const SCHEMA={
 };
 let formCtx={type:null, idx:null, single:false, storeKey:null, img:'', imgKey:null, cropSaved:null};
 let cropCtx=null;
+const supportsCrop=type=>type==='people'||type==='prof';
 function openForm(type, idx){
   const sch=SCHEMA[type]; if(!sch)return; const single=!!sch.single; const storeKey=sch.store||type;
   const item=single?(DB[storeKey]||{}):(idx!=null?DB[type][idx]:{});
   const imgField=sch.fields.find(f=>f.type==='image');
   const savedImg=imgField?(item[imgField.k]||''):'';
   formCtx={type, idx, single, storeKey, imgKey:imgField?imgField.k:null,
-    img:type==='people'?(item.photoOriginal||savedImg):savedImg,
-    cropSaved:type==='people'?(item.photoCrop||null):null};
+    img:supportsCrop(type)?(item.photoOriginal||savedImg):savedImg,
+    cropSaved:supportsCrop(type)?(item.photoCrop||null):null};
   $('#modal-title').textContent=(single||idx!=null?'수정 · ':'추가 · ')+sch.title;
   $('#modal-fields').innerHTML=sch.fields.map(f=>{
     const v=item[f.k];
@@ -1111,7 +1112,7 @@ function openForm(type, idx){
     if(f.type==='links'){const val=(v||[]).map(l=>`${l.label}|${l.url}`).join('\n');
       return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-links="1" placeholder="PDF|https://...">${esc(val)}</textarea></div>`;}
     if(f.type==='image') return `<div class="field"><label>${esc(f.label)}</label><div class="img-field">
-        ${type==='people'?`<div class="crop-wrap"><div class="hint" style="margin:0;text-align:center">홈페이지 카드에 표시되는 모습</div><canvas class="crop-canvas" id="cropcanvas" width="800" height="800"></canvas>
+        ${supportsCrop(type)?`<div class="crop-wrap"><div class="hint" style="margin:0;text-align:center">홈페이지 카드에 표시되는 모습</div><canvas class="crop-canvas" id="cropcanvas" width="${type==='prof'?640:800}" height="800"></canvas>
           <div class="crop-tools"><span>축소</span><input id="cropzoom" type="range" min="1" max="3" step="0.01" value="1"><span>확대</span></div>
           <div class="hint" style="margin:0">사진을 드래그해 표시할 영역을 정하고, 슬라이더로 확대할 수 있습니다.</div></div>`:
           `<div class="img-prev" id="imgprev">${formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기'}</div>`}
@@ -1122,12 +1123,12 @@ function openForm(type, idx){
   const fileEl=$('#imgfile');
   if(fileEl){
     fileEl.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return;
-      resizeImage(file).then(src=>{formCtx.img=src; formCtx.cropSaved=null; if(type==='people')initCrop(src); else $('#imgprev').innerHTML=`<img src="${src}">`; $('#imgurl').value='';})
+      resizeImage(file).then(src=>{formCtx.img=src; formCtx.cropSaved=null; if(supportsCrop(type))initCrop(src); else $('#imgprev').innerHTML=`<img src="${src}">`; $('#imgurl').value='';})
         .catch(()=>toast('이미지 파일을 읽지 못했습니다. 다른 파일을 선택해 주세요.'));});
-    $('#imgurl').addEventListener('change',e=>{formCtx.img=e.target.value.trim(); formCtx.cropSaved=null; if(type==='people'&&formCtx.img)initCrop(formCtx.img); else if(type==='people'){cropCtx=null; $('#cropcanvas').getContext('2d').clearRect(0,0,800,800);} else $('#imgprev').innerHTML=formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기';});
+    $('#imgurl').addEventListener('change',e=>{formCtx.img=e.target.value.trim(); formCtx.cropSaved=null; if(supportsCrop(type)&&formCtx.img)initCrop(formCtx.img); else if(supportsCrop(type)){cropCtx=null; const c=$('#cropcanvas'); c.getContext('2d').clearRect(0,0,c.width,c.height);} else $('#imgprev').innerHTML=formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기';});
   }
   $('#modal').classList.add('open');
-  cropCtx=null; if(type==='people'&&formCtx.img)initCrop(formCtx.img,formCtx.cropSaved);
+  cropCtx=null; if(supportsCrop(type)&&formCtx.img)initCrop(formCtx.img,formCtx.cropSaved);
 }
 function closeForm(){$('#modal').classList.remove('open');}
 function initCrop(src,saved=null){
@@ -1193,8 +1194,8 @@ function saveForm(){
     else if(el.type==='number') val=Number(val)||new Date().getFullYear();
     obj[k]=val;
   });
-  if(imgKey) obj[imgKey]=(type==='people'&&cropCtx)?croppedImage():(formCtx.img||'');
-  if(type==='people'){
+  if(imgKey) obj[imgKey]=(supportsCrop(type)&&cropCtx)?croppedImage():(formCtx.img||'');
+  if(supportsCrop(type)){
     obj.photoOriginal=formCtx.img||'';
     obj.photoCrop=cropCtx?{zoom:cropCtx.zoom,x:cropCtx.x,y:cropCtx.y}:null;
   }
