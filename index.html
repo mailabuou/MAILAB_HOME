@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAILAB — Medical Artificial Intelligence Laboratory</title>
+<meta name="description" content="MAILAB, Medical Artificial Intelligence Laboratory, Department of ICT Convergence, University of Ulsan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ============================================================= -->
+<!--  MAILAB 홈페이지 — 단일 HTML 파일                                -->
+<!--  ▶ 콘텐츠는 화면 우하단 "관리 모드" 버튼으로 직접 추가·수정·삭제  -->
+<!--    편집 후 "사이트 파일로 저장"을 누르면 변경된 index.html이       -->
+<!--    다운로드됩니다. 그 파일을 호스팅에 올리면 공개 반영됩니다.       -->
+<!--  ▶ 코드로 직접 넣고 싶으면 아래 두 script 블록의 배열을 수정.      -->
+<!-- ============================================================= -->
+
+<style>
+:root{
+  /* --- University of Ulsan pastel palette (base: UOU Green) --- */
+  --green:#0E9D57; --green-2:#22B872; --green-deep:#0A6E42; --green-ink:#0C3325;
+  --mint:#EAF6EF; --mint-2:#DBEFE3; --sage:#B6E0C6;
+  --yellow:#F3B63C; --yellow-2:#F9CE6E; --yellow-soft:#FBEECB;
+  --gray:#6C7377;
+  --paper:#FFFFFF;
+  --line:#E1EBE5; --line-dk:rgba(255,255,255,.12);
+  --text:#132019; --text-2:#54615A; --text-3:#8B968F;
+  --inv:#EEF6F1; --inv-2:#A9C2B5;
+  --radius:16px; --radius-s:11px;
+  --shadow:0 1px 2px rgba(12,51,37,.05), 0 14px 34px -16px rgba(12,51,37,.18);
+  --shadow-lg:0 30px 70px -30px rgba(12,51,37,.32);
+  --maxw:1200px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0; font-family:'Inter',-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  color:var(--text); background:var(--paper); line-height:1.65;
+  -webkit-font-smoothing:antialiased; word-break:keep-all; overflow-wrap:break-word;}
+h1,h2,h3,h4{font-family:'Space Grotesk','Inter',sans-serif; line-height:1.14; margin:0; letter-spacing:-.02em; font-weight:600}
+p{margin:0} a{color:inherit; text-decoration:none} img{max-width:100%; display:block}
+.mono{font-family:'IBM Plex Mono',monospace}
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px}
+:focus-visible{outline:2px solid var(--green); outline-offset:3px; border-radius:4px}
+button{font-family:inherit}
+
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:.74rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--green); font-weight:500; display:inline-flex; align-items:center; gap:9px}
+.eyebrow::before{content:""; width:22px; height:1.5px; background:var(--green); display:inline-block}
+.dark .eyebrow{color:var(--yellow-2)} .dark .eyebrow::before{background:var(--yellow-2)}
+.section-h{font-size:clamp(1.7rem,3.2vw,2.5rem); margin:16px 0 0; max-width:20ch}
+.section-sub{color:var(--text-2); margin-top:14px; max-width:56ch; font-size:1.02rem}
+.dark .section-sub{color:var(--inv-2)}
+
+/* ---------- NAV ---------- */
+header{position:sticky; top:0; z-index:60; background:rgba(255,255,255,.85);
+  backdrop-filter:blur(14px); border-bottom:1px solid var(--line); transition:.3s}
+.nav{display:flex; align-items:center; justify-content:space-between; height:70px}
+.brand{display:flex; align-items:center; gap:11px; font-family:'Space Grotesk'; font-weight:700;
+  font-size:1.18rem; letter-spacing:-.01em; cursor:pointer}
+.brand .mark{width:32px; height:32px; flex:0 0 auto}
+.brand small{display:block; font-family:'IBM Plex Mono'; font-size:.56rem; letter-spacing:.16em;
+  color:var(--text-3); font-weight:500; margin-top:2px}
+.menu{display:flex; gap:4px; align-items:center}
+.menu a{padding:9px 15px; border-radius:9px; font-size:.94rem; font-weight:500; color:var(--text-2);
+  transition:.18s; cursor:pointer; position:relative}
+.menu a:hover{color:var(--text); background:var(--mint)}
+.menu a.active{color:var(--green-deep)}
+.menu a.active::after{content:""; position:absolute; left:15px; right:15px; bottom:3px; height:2px;
+  background:linear-gradient(90deg,var(--green),var(--yellow)); border-radius:2px}
+.burger{display:none; background:none; border:1px solid var(--line); border-radius:10px; width:44px; height:40px;
+  cursor:pointer; align-items:center; justify-content:center}
+.burger span,.burger span::before,.burger span::after{content:""; display:block; width:19px; height:2px;
+  background:var(--text); border-radius:2px; position:relative; transition:.25s}
+.burger span::before{position:absolute; top:-6px} .burger span::after{position:absolute; top:6px}
+
+/* ---------- PAGES ---------- */
+.page{display:none; animation:fade .5s ease} .page.on{display:block}
+@keyframes fade{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+section{padding:84px 0}
+.dark{background:var(--green-ink); color:var(--inv)}
+.mist{background:var(--mint)}
+
+/* ---------- HERO ---------- */
+.hero{position:relative; background:linear-gradient(180deg,var(--mint) 0%, #fff 78%); overflow:hidden;
+  padding:112px 0 92px; min-height:86vh; display:flex; align-items:center}
+#neural{position:absolute; inset:0; width:100%; height:100%}
+.hero::after{content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(1100px 520px at 74% 8%, rgba(34,184,114,.16), transparent 60%),
+             radial-gradient(760px 460px at 6% 100%, rgba(243,182,60,.14), transparent 55%)}
+.hero .wrap{position:relative; z-index:2; width:100%}
+.hero-badge{display:inline-flex; align-items:center; gap:9px; padding:7px 15px; border-radius:100px;
+  background:rgba(255,255,255,.7); border:1px solid var(--sage);
+  font-family:'IBM Plex Mono'; font-size:.72rem; letter-spacing:.08em; color:var(--green-deep); margin-bottom:26px}
+.hero-badge b{color:var(--green); font-weight:600}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(14,157,87,.5)} 70%{box-shadow:0 0 0 9px rgba(14,157,87,0)} 100%{box-shadow:0 0 0 0 rgba(14,157,87,0)}}
+.hero h1{font-size:clamp(2.5rem,6vw,4.5rem); font-weight:600; max-width:16ch; letter-spacing:-.03em; color:var(--green-ink)}
+.hero h1 .grad{background:linear-gradient(100deg,var(--green),var(--green-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent; position:relative}
+.hero h1 .grad::after{content:""; position:absolute; left:0; right:6%; bottom:2px; height:.14em;
+  background:var(--yellow); opacity:.5; border-radius:3px; z-index:-1}
+.hero-lead{margin-top:26px; max-width:52ch; font-size:1.14rem; color:var(--text-2); line-height:1.7}
+.hero-lead b{color:var(--green-deep)}
+.hero-actions{display:flex; gap:14px; margin-top:38px; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:10px; padding:14px 24px; border-radius:12px;
+  font-weight:600; font-size:.98rem; cursor:pointer; transition:.2s; border:1px solid transparent}
+.btn-primary{background:linear-gradient(100deg,var(--green),var(--green-2)); color:#fff;
+  box-shadow:0 12px 28px -10px rgba(14,157,87,.6)}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 18px 38px -12px rgba(14,157,87,.75)}
+.btn-ghost{background:#fff; border-color:var(--sage); color:var(--green-deep)}
+.btn-ghost:hover{background:var(--mint); transform:translateY(-2px)}
+.btn-dark{background:var(--green-ink); color:#fff} .btn-dark:hover{background:var(--green-deep); transform:translateY(-2px)}
+.dark .btn-ghost{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.22); color:#fff}
+.dark .btn-ghost:hover{background:rgba(255,255,255,.12)}
+.btn svg{width:16px; height:16px}
+
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-top:64px; padding-top:34px;
+  border-top:1px solid var(--sage)}
+.stat .n{font-family:'Space Grotesk'; font-size:clamp(1.9rem,3.5vw,2.7rem); font-weight:700;
+  background:linear-gradient(120deg,var(--green-deep),var(--green-2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.stat .l{font-family:'IBM Plex Mono'; font-size:.74rem; letter-spacing:.06em; color:var(--text-2); margin-top:6px}
+
+/* ---------- RESEARCH CARDS ---------- */
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:52px}
+.rcard{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  transition:.28s; display:flex; flex-direction:column}
+.rcard:hover{transform:translateY(-6px); box-shadow:var(--shadow-lg); border-color:var(--sage)}
+.rcard .vis{height:150px; position:relative; overflow:hidden}
+.rcard .vis svg{position:absolute; inset:0; width:100%; height:100%}
+.rcard .body{padding:26px 24px 28px}
+.rcard .tag{font-family:'IBM Plex Mono'; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--green); font-weight:500}
+.rcard h3{font-size:1.22rem; margin:11px 0 4px}
+.rcard .en{font-family:'IBM Plex Mono'; font-size:.78rem; color:var(--text-3); margin-bottom:13px}
+.rcard p{color:var(--text-2); font-size:.94rem; line-height:1.65}
+.rcard ul{margin:15px 0 0; padding:0; list-style:none; display:grid; gap:8px}
+.rcard li{position:relative; padding-left:20px; font-size:.9rem; color:var(--text-2)}
+.rcard li::before{content:""; position:absolute; left:0; top:9px; width:7px; height:7px; border-radius:2px;
+  background:linear-gradient(135deg,var(--green),var(--yellow))}
+
+/* ---------- SPLIT / APPROACH ---------- */
+.split{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center}
+.feature-list{margin-top:30px; display:grid; gap:2px}
+.frow{display:flex; gap:16px; padding:20px 4px; border-top:1px solid var(--line-dk)}
+.frow .ic{flex:0 0 44px; width:44px; height:44px; border-radius:11px; display:grid; place-items:center;
+  background:rgba(182,224,198,.18); color:var(--yellow-2)}
+.frow h4{font-size:1.04rem; font-family:'Inter'; font-weight:600}
+.frow p{color:var(--inv-2); font-size:.92rem; margin-top:4px}
+.showcase{border-radius:var(--radius); overflow:hidden; border:1px solid var(--line-dk); background:rgba(255,255,255,.04);
+  aspect-ratio:5/4; position:relative}
+.showcase svg{width:100%; height:100%}
+
+/* ---------- NEWS (home preview + full) ---------- */
+.news-home{margin-top:44px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+.nh{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#fff; transition:.25s; display:flex; flex-direction:column}
+.nh:hover{transform:translateY(-5px); box-shadow:var(--shadow)}
+.nh .img{aspect-ratio:16/10; overflow:hidden; position:relative}
+.nh .img img{width:100%; height:100%; object-fit:cover}
+.nh .img svg{width:100%; height:100%}
+.nh .b{padding:18px 18px 20px}
+.nh .meta{display:flex; gap:9px; align-items:center; margin-bottom:9px}
+.nh time{font-family:'IBM Plex Mono'; font-size:.74rem; color:var(--text-3)}
+.nh h4{font-size:1.04rem; font-family:'Space Grotesk'; line-height:1.32}
+.cat{font-family:'IBM Plex Mono'; font-size:.64rem; letter-spacing:.06em; text-transform:uppercase;
+  padding:4px 10px; border-radius:100px; background:var(--mint-2); color:var(--green-deep); font-weight:500}
+
+.news-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:36px}
+.ncard{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#fff;
+  transition:.25s; display:flex; flex-direction:column; position:relative}
+.ncard:hover{transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--sage)}
+.ncard .img{aspect-ratio:16/10; overflow:hidden}
+.ncard .img img{width:100%; height:100%; object-fit:cover}
+.ncard .img svg{width:100%; height:100%}
+.ncard .b{padding:20px 20px 22px; flex:1; display:flex; flex-direction:column}
+.ncard .meta{display:flex; gap:9px; align-items:center; margin-bottom:11px}
+.ncard time{font-family:'IBM Plex Mono'; font-size:.76rem; color:var(--text-3)}
+.ncard h3{font-size:1.14rem; font-family:'Space Grotesk'; line-height:1.3}
+.ncard p{color:var(--text-2); font-size:.92rem; margin-top:10px; line-height:1.6}
+
+/* ---------- PROFESSOR ---------- */
+.prof{display:grid; grid-template-columns:340px 1fr; gap:56px; align-items:start}
+.prof-card{position:sticky; top:100px}
+.prof-photo{aspect-ratio:4/5; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line);
+  background:linear-gradient(160deg,var(--green-deep),var(--green-ink)); position:relative}
+.prof-photo svg{width:100%; height:100%}
+.prof-meta{margin-top:22px; display:grid; gap:12px}
+.prof-meta .row{display:flex; gap:12px; font-size:.92rem; align-items:flex-start}
+.prof-meta .k{flex:0 0 74px; font-family:'IBM Plex Mono'; font-size:.72rem; letter-spacing:.06em; color:var(--text-3); padding-top:2px; text-transform:uppercase}
+.prof-meta .v{color:var(--text); font-weight:500}
+.prof h2{font-size:2.2rem} .prof .role{color:var(--green); font-weight:600; margin-top:8px; font-size:1.05rem}
+.prof .dept{color:var(--text-2); margin-top:2px}
+.bio-block{margin-top:34px}
+.bio-block h4{font-family:'IBM Plex Mono'; font-size:.76rem; letter-spacing:.14em; text-transform:uppercase; color:var(--green); margin-bottom:14px; font-weight:500}
+.bio-block p{color:var(--text-2); margin-bottom:12px}
+.bio-block ul{margin:0; padding:0; list-style:none; display:grid; gap:11px}
+.bio-block li{padding-left:24px; position:relative; color:var(--text-2)}
+.bio-block li::before{content:""; position:absolute; left:0; top:10px; width:8px; height:8px; border-radius:2px;
+  background:linear-gradient(135deg,var(--green),var(--yellow))}
+.timeline li{padding-left:24px; border-left:2px solid var(--line); margin-left:4px; padding-bottom:6px}
+.timeline li::before{left:-6px; top:8px}
+.chips{display:flex; flex-wrap:wrap; gap:9px}
+.chip{padding:8px 15px; border-radius:100px; background:var(--mint); border:1px solid var(--sage); font-size:.86rem; font-weight:500; color:var(--green-deep)}
+
+/* ---------- PEOPLE ---------- */
+.grp-h{font-family:'IBM Plex Mono'; font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; color:var(--green);
+  margin:52px 0 22px; display:flex; align-items:center; gap:14px}
+.grp-h::after{content:""; flex:1; height:1px; background:var(--line)}
+.people-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px}
+.pcard{border:1px solid var(--line); border-radius:var(--radius-s); overflow:hidden; background:var(--paper); transition:.25s; position:relative}
+.pcard:hover{transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--sage)}
+.pcard .ph{aspect-ratio:1/1; background:linear-gradient(160deg,var(--green-deep),var(--green-ink)); position:relative}
+.pcard .ph svg{width:100%; height:100%}
+.pcard .info{padding:17px 18px 19px}
+.pcard .nm{font-family:'Space Grotesk'; font-weight:600; font-size:1.06rem}
+.pcard .deg{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--green); margin-top:3px}
+.pcard .fo{font-size:.84rem; color:var(--text-2); margin-top:9px; line-height:1.5}
+.pcard .now{font-size:.82rem; color:var(--green-deep); margin-top:7px; font-weight:500}
+
+/* ---------- PAPERS / PATENTS ---------- */
+.pubhero{display:grid; grid-template-columns:1.05fr .95fr; gap:52px; align-items:center}
+.pubhero .art{border-radius:var(--radius); overflow:hidden; border:1px solid var(--line-dk); aspect-ratio:4/3; background:rgba(255,255,255,.04)}
+.pubhero .art svg{width:100%; height:100%}
+.pubhero h2{font-size:clamp(1.9rem,3.4vw,2.8rem)}
+.mini-stats{display:flex; gap:36px; margin-top:30px}
+.mini-stats .n{font-family:'Space Grotesk'; font-size:1.9rem; font-weight:700;
+  background:linear-gradient(120deg,var(--yellow-2),var(--green-2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.mini-stats .l{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--inv-2); margin-top:2px}
+
+.board-bar{display:flex; gap:14px; align-items:center; margin-top:6px; flex-wrap:wrap; justify-content:space-between}
+.search{display:flex; align-items:center; gap:9px; background:var(--paper); border:1px solid var(--line);
+  border-radius:11px; padding:11px 15px; min-width:250px; flex:1; max-width:340px}
+.search input{border:none; outline:none; font:inherit; font-size:.94rem; width:100%; background:none; color:var(--text)}
+.search svg{width:17px; height:17px; color:var(--text-3); flex:0 0 auto}
+.filters{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.fchip{padding:9px 16px; border-radius:100px; border:1px solid var(--line); background:var(--paper);
+  font-family:'IBM Plex Mono'; font-size:.8rem; font-weight:500; color:var(--text-2); cursor:pointer; transition:.18s}
+.fchip:hover{border-color:var(--green); color:var(--green)}
+.fchip.on{background:var(--green-ink); color:#fff; border-color:var(--green-ink)}
+
+.board{margin-top:30px; border-top:2px solid var(--green-ink)}
+.pub{display:grid; grid-template-columns:96px 1fr auto; gap:26px; padding:26px 8px; align-items:start;
+  border-bottom:1px solid var(--line); transition:.22s; position:relative}
+.pub:hover{background:var(--mint); padding-left:18px; padding-right:18px}
+.pub .thumb{width:96px; height:76px; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
+.pub .thumb svg{width:100%; height:100%}
+.pub .yr{font-family:'IBM Plex Mono'; font-size:.76rem; color:var(--green); font-weight:600; letter-spacing:.04em}
+.badge-pill{display:inline-block; margin-left:7px; padding:2px 8px; border-radius:100px; font-family:'IBM Plex Mono';
+  font-size:.64rem; font-weight:600; letter-spacing:.02em; vertical-align:middle;
+  background:linear-gradient(120deg,var(--green),var(--green-2)); color:#fff}
+.badge-pill.pct{background:linear-gradient(120deg,var(--yellow),var(--yellow-2)); color:var(--green-ink)}
+.checkrow{display:flex; flex-wrap:wrap; gap:9px}
+.checkopt{display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border:1px solid var(--line); border-radius:100px;
+  background:var(--paper); cursor:pointer; font-size:.88rem; font-weight:500; color:var(--text-2); transition:.15s; user-select:none}
+.checkopt:hover{border-color:var(--green); color:var(--green)}
+.checkopt input{width:15px; height:15px; accent-color:var(--green); cursor:pointer}
+.pub h3{font-size:1.14rem; margin:7px 0 8px; font-family:'Space Grotesk'; font-weight:600; line-height:1.28}
+.pub .auth{font-size:.9rem; color:var(--text-2)} .pub .auth b{color:var(--text); font-weight:600}
+.pub .venue{font-size:.88rem; color:var(--text-2); margin-top:5px; font-style:italic}
+.pub .ptags{display:flex; gap:7px; margin-top:12px; flex-wrap:wrap}
+.pub .pt{font-family:'IBM Plex Mono'; font-size:.66rem; letter-spacing:.06em; text-transform:uppercase;
+  padding:4px 10px; border-radius:6px; background:var(--mint-2); color:var(--green-deep); font-weight:500}
+.pub .links{display:flex; gap:8px; flex-direction:column; align-items:flex-end}
+.plink{display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono'; font-size:.76rem; font-weight:500;
+  padding:7px 13px; border-radius:8px; border:1px solid var(--line); color:var(--text-2); transition:.18s; white-space:nowrap}
+.plink:hover{border-color:var(--green); color:var(--green); background:rgba(14,157,87,.05)}
+.plink svg{width:13px; height:13px}
+.empty{padding:60px 0; text-align:center; color:var(--text-3); font-family:'IBM Plex Mono'; font-size:.9rem}
+
+/* ---------- CONTACT ---------- */
+.contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:56px}
+.cinfo .item{display:flex; gap:18px; padding:24px 0; border-bottom:1px solid var(--line)}
+.cinfo .item:first-child{padding-top:0}
+.cinfo .ic{flex:0 0 46px; width:46px; height:46px; border-radius:12px; display:grid; place-items:center;
+  background:linear-gradient(135deg,rgba(14,157,87,.12),rgba(243,182,60,.16)); color:var(--green)}
+.cinfo h4{font-size:.78rem; font-family:'IBM Plex Mono'; letter-spacing:.12em; text-transform:uppercase; color:var(--text-3); font-weight:500}
+.cinfo .big{font-size:1.06rem; font-weight:500; margin-top:5px; color:var(--text)}
+.cform{background:var(--mint); border:1px solid var(--sage); border-radius:var(--radius); padding:34px}
+.field{margin-bottom:18px}
+.field label{display:block; font-family:'IBM Plex Mono'; font-size:.74rem; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--text-2); margin-bottom:8px; font-weight:500}
+.field input,.field textarea,.field select{width:100%; padding:13px 15px; border:1px solid var(--line); border-radius:10px;
+  font:inherit; font-size:.95rem; background:var(--paper); color:var(--text); transition:.18s}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none; border-color:var(--green); box-shadow:0 0 0 3px rgba(14,157,87,.13)}
+.field textarea{resize:vertical; min-height:110px}
+.map{margin-top:44px; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); height:300px}
+.map iframe{width:100%; height:100%; border:0; filter:grayscale(.15) contrast(1.03)}
+
+/* ---------- CTA band ---------- */
+.ctaband{background:linear-gradient(120deg,var(--green-ink),var(--green-deep)); color:#fff; border-radius:24px;
+  padding:64px 56px; text-align:center; position:relative; overflow:hidden}
+.ctaband::before{content:""; position:absolute; inset:0;
+  background:radial-gradient(600px 300px at 30% 0%, rgba(34,184,114,.4), transparent 60%),
+             radial-gradient(500px 300px at 90% 100%, rgba(243,182,60,.25), transparent 60%)}
+.ctaband > *{position:relative; z-index:2}
+.ctaband h2{font-size:clamp(1.8rem,3.2vw,2.6rem)}
+.ctaband p{color:var(--inv-2); margin:16px auto 30px; max-width:48ch}
+
+/* ---------- FOOTER ---------- */
+footer{background:var(--green-ink); color:var(--inv-2); padding:64px 0 34px}
+.foot-top{display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:40px; padding-bottom:40px; border-bottom:1px solid var(--line-dk)}
+.foot-top .brand{color:#fff}
+.foot-top p{margin-top:16px; font-size:.9rem; max-width:38ch; line-height:1.7}
+.fcol h5{font-family:'IBM Plex Mono'; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--inv); margin:0 0 16px; font-weight:500}
+.fcol a{display:block; padding:7px 0; font-size:.92rem; color:var(--inv-2); cursor:pointer; transition:.15s}
+.fcol a:hover{color:var(--yellow-2)}
+.foot-bot{display:flex; justify-content:space-between; align-items:center; padding-top:28px; flex-wrap:wrap; gap:14px}
+.foot-bot small{font-family:'IBM Plex Mono'; font-size:.76rem; color:var(--text-3)}
+
+/* ============ EDIT / ADMIN ============ */
+.admin-only{display:none !important}
+body.editing .admin-only{display:inline-flex !important}
+body.editing .acts{display:flex !important}
+.acts{display:none; gap:6px; position:absolute; top:10px; right:10px; z-index:5}
+.pub .acts{position:static; margin-top:10px; justify-content:flex-end}
+.act{font-family:'IBM Plex Mono'; font-size:.72rem; font-weight:500; padding:6px 11px; border-radius:8px; cursor:pointer;
+  border:1px solid var(--sage); background:rgba(255,255,255,.94); color:var(--green-deep); transition:.15s}
+.act:hover{background:var(--green); color:#fff; border-color:var(--green)}
+.act.del{border-color:#f0c9c4; color:#c0392b} .act.del:hover{background:#c0392b; color:#fff; border-color:#c0392b}
+.add-btn{font-family:'IBM Plex Mono'; font-size:.8rem; font-weight:600; padding:9px 16px; border-radius:100px; cursor:pointer;
+  border:1.5px dashed var(--green); background:var(--mint); color:var(--green-deep); transition:.15s}
+.add-btn:hover{background:var(--green); color:#fff; border-style:solid}
+body.editing .rcard,body.editing .pcard,body.editing .ncard,body.editing .pub{position:relative}
+body.editing .pcard,body.editing .ncard{outline:1.5px dashed transparent}
+
+.fab{position:fixed; right:22px; bottom:22px; z-index:80; background:var(--green-ink); color:#fff; border:none;
+  padding:13px 20px; border-radius:100px; font-weight:600; font-size:.9rem; cursor:pointer; box-shadow:var(--shadow-lg);
+  display:inline-flex; align-items:center; gap:8px; transition:.2s}
+.fab:hover{background:var(--green-deep); transform:translateY(-2px)}
+.adminbar{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:81; display:none; gap:10px;
+  align-items:center; background:var(--green-ink); color:#fff; padding:11px 14px 11px 20px; border-radius:100px;
+  box-shadow:var(--shadow-lg); flex-wrap:wrap; justify-content:center; max-width:calc(100vw - 32px)}
+body.editing .adminbar{display:flex} body.editing .fab{display:none}
+.adminbar .tag{font-family:'IBM Plex Mono'; font-size:.78rem; color:var(--yellow-2); margin-right:4px}
+.adminbar .tag .dot{background:var(--yellow-2); display:inline-block; margin-right:6px}
+.abtn{font-family:'Inter'; font-size:.85rem; font-weight:600; padding:9px 15px; border-radius:100px; cursor:pointer;
+  border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff; transition:.15s}
+.abtn:hover{background:rgba(255,255,255,.18)}
+.abtn.primary{background:linear-gradient(100deg,var(--green),var(--green-2)); border-color:transparent}
+.abtn.primary:hover{filter:brightness(1.08)}
+
+/* modal */
+.modal{position:fixed; inset:0; z-index:90; display:none; align-items:flex-start; justify-content:center;
+  background:rgba(12,51,37,.5); backdrop-filter:blur(3px); padding:5vh 16px; overflow-y:auto}
+.modal.open{display:flex}
+.modal-box{background:#fff; border-radius:18px; width:100%; max-width:560px; box-shadow:var(--shadow-lg); overflow:hidden; animation:pop .25s ease}
+@keyframes pop{from{opacity:0; transform:translateY(14px) scale(.98)} to{opacity:1; transform:none}}
+.modal-head{display:flex; align-items:center; justify-content:space-between; padding:22px 26px; border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:1.2rem}
+.modal-x{background:var(--mint); border:none; width:34px; height:34px; border-radius:9px; cursor:pointer; font-size:1rem; color:var(--text-2)}
+.modal-x:hover{background:var(--mint-2)}
+.modal-body{padding:24px 26px; max-height:60vh; overflow-y:auto}
+.modal-foot{display:flex; gap:12px; justify-content:flex-end; padding:18px 26px; border-top:1px solid var(--line); background:var(--mint)}
+.img-field{display:grid; gap:10px}
+.img-prev{aspect-ratio:16/9; border-radius:10px; border:1px dashed var(--sage); background:var(--mint); overflow:hidden;
+  display:grid; place-items:center; color:var(--text-3); font-family:'IBM Plex Mono'; font-size:.8rem}
+.img-prev img{width:100%; height:100%; object-fit:cover}
+.hint{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--text-3); margin-top:-6px; margin-bottom:14px}
+#toast{position:fixed; left:50%; bottom:84px; transform:translateX(-50%) translateY(10px); z-index:95;
+  background:var(--green-ink); color:#fff; padding:13px 22px; border-radius:100px; font-size:.9rem; font-weight:500;
+  box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:.3s; max-width:90vw; text-align:center}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:920px){
+  .grid-3,.people-grid,.news-grid,.news-home{grid-template-columns:repeat(2,1fr)}
+  .split,.prof,.pubhero,.contact-grid,.foot-top{grid-template-columns:1fr; gap:40px}
+  .prof-card{position:static}
+  .stats{grid-template-columns:repeat(2,1fr); gap:28px}
+  .menu{position:fixed; inset:70px 0 auto; flex-direction:column; align-items:stretch; background:var(--paper);
+    padding:14px 20px 22px; border-bottom:1px solid var(--line); box-shadow:var(--shadow); transform:translateY(-135%);
+    transition:.32s cubic-bezier(.2,.8,.2,1); gap:2px}
+  .menu.open{transform:none}
+  .menu a{padding:14px; font-size:1rem} .menu a.active::after{display:none} .menu a.active{background:var(--mint)}
+  .burger{display:flex}
+}
+@media(max-width:560px){
+  .wrap{padding:0 18px} section{padding:60px 0}
+  .grid-3,.people-grid,.news-grid,.news-home{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .pub{grid-template-columns:1fr; gap:14px} .pub .links{flex-direction:row; align-items:center; flex-wrap:wrap}
+  .pub .thumb{width:100%; height:150px}
+  .ctaband{padding:44px 24px} .mini-stats{gap:24px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+</style>
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header>
+  <nav class="nav wrap">
+    <div class="brand" data-go="home">
+      <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <rect width="40" height="40" rx="10" fill="url(#bg)"/>
+        <circle cx="12" cy="14" r="3" fill="#fff"/><circle cx="28" cy="12" r="3" fill="#F9CE6E"/>
+        <circle cx="20" cy="26" r="3" fill="#B6E0C6"/><circle cx="30" cy="27" r="2.4" fill="#fff"/>
+        <path d="M12 14 L20 26 M28 12 L20 26 M20 26 L30 27 M12 14 L28 12" stroke="#fff" stroke-opacity=".55" stroke-width="1.4"/>
+        <defs><linearGradient id="bg" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#0E9D57"/><stop offset="1" stop-color="#0A6E42"/></linearGradient></defs>
+      </svg>
+      <span>MAILAB<small>MEDICAL AI LAB · UOU</small></span>
+    </div>
+    <div class="menu" id="menu">
+      <a data-go="home" class="active">Home</a>
+      <a data-go="professor">Professor</a>
+      <a data-go="people">People</a>
+      <a data-go="news">News</a>
+      <a data-go="papers">Papers</a>
+      <a data-go="patents">Patents</a>
+      <a data-go="contact">Contact</a>
+    </div>
+    <button class="burger" id="burger" aria-label="메뉴"><span></span></button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= HOME ================= -->
+<div class="page on" id="home">
+  <section class="hero">
+    <canvas id="neural"></canvas>
+    <div class="wrap">
+      <span class="hero-badge"><span class="dot"></span> Department of ICT Convergence · <b>University of Ulsan</b></span>
+      <h1>의료의 미래를<br>여는 <span class="grad">인공지능</span></h1>
+      <p class="hero-lead">MAILAB은 의료 인공지능 개발을 목표로, 의료 영상·생체 신호·뇌-컴퓨터 인터페이스를 아우르는
+        <b>설명 가능하고 신뢰할 수 있는 AI</b>를 연구합니다.
+        We build interpretable medical AI — from brain signals to clinical decisions.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" data-go="papers">연구 성과 보기
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-ghost" data-go="professor">연구실 소개</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="n" data-stat="papers" data-count="0">0</div><div class="l">PUBLICATIONS</div></div>
+        <div class="stat"><div class="n" data-stat="patents" data-count="0">0</div><div class="l">PATENTS FILED</div></div>
+        <div class="stat"><div class="n" data-stat="areas" data-count="0">0</div><div class="l">RESEARCH AREAS</div></div>
+        <div class="stat"><div class="n" data-stat="members" data-count="0">0</div><div class="l">LAB MEMBERS</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <span class="eyebrow">Research Areas</span>
+      <h2 class="section-h" style="max-width:none; white-space:nowrap">신호에서 진단까지, 세 개의 연구 축</h2>
+      <p class="section-sub">MAILAB은 의료 데이터의 수집·분석부터 임상 의사결정 지원, 그리고 뇌와 기계를 잇는 인터페이스까지 의료 AI의 전 주기를 연구합니다.</p>
+      <div class="grid-3" id="research-cards"></div>
+    </div>
+  </section>
+
+  <section class="dark">
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">Our Approach</span>
+        <h2 class="section-h" style="color:#fff">사후 설명이 아니라,<br>설계부터 해석 가능한 AI</h2>
+        <p class="section-sub">벤치마크 점수를 좇기보다, 왜 그런 판단을 내렸는지 임상의가 신뢰할 수 있는 원리 중심의 방법론을 지향합니다.</p>
+        <div class="feature-list">
+          <div class="frow"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-4 12.7V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.3A7 7 0 0 0 12 2Z"/><path d="M9 21h6"/></svg></div>
+            <div><h4>Interpretable by Design</h4><p>프로토타입·희소 어텐션·물리기반 제약 등 본질적으로 설명 가능한 구조를 설계합니다.</p></div></div>
+          <div class="frow"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 7.5 11 15.5M16.5 7.5 13 15.5M8 6h8"/></svg></div>
+            <div><h4>Graph &amp; Connectivity</h4><p>뇌 기능적 연결성(wPLI)과 그래프 신경망으로 신경·생리 신호의 구조를 모델링합니다.</p></div></div>
+          <div class="frow"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+            <div><h4>Signal to Clinic</h4><p>EEG·OCTA·CT 등 실제 임상 데이터로 검증하며 병원과 함께 연구합니다.</p></div></div>
+        </div>
+      </div>
+      <div class="showcase" id="showcase-art"></div>
+    </div>
+  </section>
+
+  <section class="mist">
+    <div class="wrap">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px">
+        <div><span class="eyebrow">Lab News</span><h2 class="section-h">최근 소식</h2></div>
+        <a class="btn btn-dark" data-go="news" style="font-size:.9rem; padding:12px 20px">소식 전체 보기</a>
+      </div>
+      <div class="news-home" id="news-home"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="ctaband">
+        <span class="eyebrow" style="justify-content:center; color:var(--yellow-2)">Join MAILAB</span>
+        <h2>의료 AI의 다음 장을 함께 쓸<br>연구원을 찾습니다</h2>
+        <p>학부 인턴 · 석사 · 박사 과정 모집. 뇌신호, 의료영상, 설명가능 AI에 관심 있는 분을 환영합니다.</p>
+        <a class="btn btn-primary" data-go="contact">지원 · 문의하기</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= PROFESSOR ================= -->
+<div class="page" id="professor">
+  <section>
+    <div class="wrap">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:14px; margin-bottom:44px">
+        <div><span class="eyebrow">Principal Investigator</span><h2 class="section-h" style="margin-top:16px">연구책임자</h2></div>
+        <button class="add-btn admin-only" data-edit="prof:single">✎ 교수 정보 수정</button>
+      </div>
+      <div class="prof" id="prof-mount"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= PEOPLE ================= -->
+<div class="page" id="people">
+  <section>
+    <div class="wrap">
+      <span class="eyebrow">The Team</span>
+      <h2 class="section-h">함께 연구하는 사람들</h2>
+      <p class="section-sub">호기심과 끈기로 의료 AI의 어려운 문제에 도전하는 MAILAB 구성원과 졸업생을 소개합니다.</p>
+      <div id="people-groups"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= NEWS ================= -->
+<div class="page" id="news">
+  <section>
+    <div class="wrap">
+      <span class="eyebrow">Lab News</span>
+      <h2 class="section-h">연구실 소식</h2>
+      <p class="section-sub">국제 학회 참석·발표, 논문 게재, 수상, 연구실 행사 등 MAILAB의 활동 소식을 사진과 함께 전합니다.</p>
+      <div class="board-bar" style="margin-top:34px">
+        <div class="filters" id="news-filters"></div>
+      </div>
+      <div class="news-grid" id="news-board"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= PAPERS ================= -->
+<div class="page" id="papers">
+  <section class="dark" style="padding-bottom:70px">
+    <div class="wrap pubhero">
+      <div>
+        <span class="eyebrow">Publications</span>
+        <h2 class="section-h" style="color:#fff">peer-reviewed 논문으로<br>검증하는 연구</h2>
+        <p class="section-sub">MAILAB의 연구는 국제 학술지와 학회를 통해 공개·검증됩니다. 뇌신호 해석, 그래프 기반 연결성, 의료 영상 분석, 설명가능 AI를 중심으로 성과를 축적하고 있습니다.</p>
+        <div class="mini-stats">
+          <div><div class="n" id="pp-count">–</div><div class="l">TOTAL PAPERS</div></div>
+          <div><div class="n" id="pp-q1">–</div><div class="l">Q1 JOURNALS</div></div>
+        </div>
+      </div>
+      <div class="art">
+        <div id="papers-art" style="width:100%; height:100%"></div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <div style="margin-bottom:8px"><span class="eyebrow">Archive</span><h2 class="section-h" style="font-size:1.9rem">논문 게시판</h2></div>
+      <div class="board-bar">
+        <div class="filters" id="paper-filters"></div>
+        <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="text" id="paper-search" placeholder="제목 · 저자 · 학술지 검색…" aria-label="논문 검색"></label>
+      </div>
+      <div class="board" id="paper-board"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= PATENTS ================= -->
+<div class="page" id="patents">
+  <section class="dark" style="padding-bottom:70px">
+    <div class="wrap pubhero">
+      <div>
+        <span class="eyebrow">Patents</span>
+        <h2 class="section-h" style="color:#fff">연구를 기술로,<br>기술을 지식재산으로</h2>
+        <p class="section-sub">MAILAB의 핵심 방법론은 특허로 보호되어 산업 현장으로 이어집니다. 진단 보조, 신호 분석, 의료 영상 처리 분야의 지식재산을 확보하고 있습니다.</p>
+        <div class="mini-stats">
+          <div><div class="n" id="pt-count">–</div><div class="l">TOTAL PATENTS</div></div>
+          <div><div class="n" id="pt-reg">–</div><div class="l">REGISTERED</div></div>
+          <div><div class="n" id="pt-pend">–</div><div class="l">PENDING</div></div>
+        </div>
+      </div>
+      <div class="art">
+        <div id="patents-art" style="width:100%; height:100%"></div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="wrap">
+      <div style="margin-bottom:8px"><span class="eyebrow">Archive</span><h2 class="section-h" style="font-size:1.9rem">특허 게시판</h2></div>
+      <div class="board-bar">
+        <div class="filters" id="patent-filters"></div>
+        <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="text" id="patent-search" placeholder="명칭 · 발명자 · 번호 검색…" aria-label="특허 검색"></label>
+      </div>
+      <div class="board" id="patent-board"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= CONTACT ================= -->
+<div class="page" id="contact">
+  <section>
+    <div class="wrap">
+      <span class="eyebrow">Contact · Join the Lab</span>
+      <h2 class="section-h">연락 및 지원 문의</h2>
+      <p class="section-sub">공동연구, 대학원 진학, 학부 인턴 등 어떤 문의든 환영합니다. 아래 양식을 작성하시거나 이메일로 연락 주세요.</p>
+      <div class="contact-grid" style="margin-top:52px">
+        <div class="cinfo">
+          <div class="item"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <div><h4>Address</h4><div class="big">울산광역시 남구 대학로 93<br>울산대학교 공학관 7-222</div></div></div>
+          <div class="item"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></div>
+            <div><h4>Email</h4><div class="big"><a href="mailto:leeseho@ulsan.ac.kr" style="color:var(--green)">leeseho@ulsan.ac.kr</a></div></div></div>
+          <div class="item"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-4 12.7V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.3A7 7 0 0 0 12 2Z"/><path d="M9 21h6"/></svg></div>
+            <div><h4>Lab</h4><div class="big">Medical AI Laboratory (MAILAB)<br>ICT융합학부</div></div></div>
+          <div class="map"><iframe title="University of Ulsan map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=University+of+Ulsan&output=embed"></iframe></div>
+        </div>
+        <div class="cform">
+          <div class="field"><label for="c-name">이름 / Name</label><input id="c-name" type="text" placeholder="홍길동"></div>
+          <div class="field"><label for="c-email">이메일 / Email</label><input id="c-email" type="email" placeholder="you@example.com"></div>
+          <div class="field"><label for="c-role">구분 / Inquiry Type</label>
+            <select id="c-role"><option>학부 인턴 문의</option><option>대학원(석·박사) 진학</option><option>공동연구 제안</option><option>기타 문의</option></select></div>
+          <div class="field"><label for="c-msg">메시지 / Message</label><textarea id="c-msg" placeholder="관심 연구 분야와 배경을 간단히 적어주세요."></textarea></div>
+          <button class="btn btn-primary" id="c-send" style="width:100%; justify-content:center">이메일로 보내기
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div>
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <rect width="40" height="40" rx="10" fill="url(#bg2)"/>
+            <circle cx="12" cy="14" r="3" fill="#fff"/><circle cx="28" cy="12" r="3" fill="#F9CE6E"/><circle cx="20" cy="26" r="3" fill="#B6E0C6"/>
+            <path d="M12 14 L20 26 M28 12 L20 26 M12 14 L28 12" stroke="#fff" stroke-opacity=".55" stroke-width="1.4"/>
+            <defs><linearGradient id="bg2" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#0E9D57"/><stop offset="1" stop-color="#0A6E42"/></linearGradient></defs>
+          </svg>
+          <span style="font-family:'Space Grotesk'; font-weight:700; font-size:1.18rem">MAILAB</span>
+        </div>
+        <p>Medical Artificial Intelligence Laboratory · Department of ICT Convergence, University of Ulsan. 설명 가능하고 신뢰할 수 있는 의료 AI를 연구합니다.</p>
+      </div>
+      <div class="fcol"><h5>Navigate</h5>
+        <a data-go="home">Home</a><a data-go="professor">Professor</a><a data-go="people">People</a>
+        <a data-go="news">News</a><a data-go="papers">Papers</a><a data-go="patents">Patents</a><a data-go="contact">Contact</a>
+      </div>
+      <div class="fcol"><h5>Connect</h5>
+        <a href="mailto:leeseho@ulsan.ac.kr">leeseho@ulsan.ac.kr</a>
+        <a href="https://scholar.google.com" target="_blank" rel="noopener">Google Scholar</a>
+        <a href="https://www.ulsan.ac.kr" target="_blank" rel="noopener">University of Ulsan</a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <small>© 2026 MAILAB · Medical Artificial Intelligence Laboratory. All rights reserved.</small>
+      <small>Department of ICT Convergence · University of Ulsan</small>
+    </div>
+  </div>
+</footer>
+
+<!-- floating admin -->
+<button class="fab" id="fab">✎ 관리 모드</button>
+<div class="adminbar" id="adminbar">
+  <span class="tag"><span class="dot"></span>편집 중</span>
+  <button class="abtn primary" id="ab-export">사이트 파일로 저장</button>
+  <button class="abtn" id="ab-pw">비밀번호 변경</button>
+  <button class="abtn" id="ab-reset">초기화</button>
+  <button class="abtn" id="ab-done">완료</button>
+  <button class="abtn" id="ab-logout">로그아웃</button>
+</div>
+
+<!-- login / password modal -->
+<div class="modal" id="auth" aria-hidden="true">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head"><h3 id="auth-title">관리자 로그인</h3><button class="modal-x" id="auth-x" aria-label="닫기">✕</button></div>
+    <div class="modal-body">
+      <div class="field" id="auth-f1"><label id="auth-l1">비밀번호</label><input type="password" id="auth-pw1"></div>
+      <div class="field" id="auth-f2" style="display:none"><label id="auth-l2">새 비밀번호 확인</label><input type="password" id="auth-pw2"></div>
+      <div class="hint" id="auth-msg" style="color:#c0392b"></div>
+    </div>
+    <div class="modal-foot"><button class="abtn" id="auth-cancel" style="color:var(--text-2); background:#fff; border-color:var(--line)">취소</button><button class="abtn primary" id="auth-go">확인</button></div>
+  </div>
+</div>
+
+<!-- confirm dialog (works in sandboxed environments where window.confirm is blocked) -->
+<div class="modal" id="confirm" aria-hidden="true">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-head"><h3 id="confirm-title">확인</h3><button class="modal-x" id="confirm-x" aria-label="닫기">✕</button></div>
+    <div class="modal-body"><p id="confirm-msg" style="color:var(--text-2); margin:0"></p></div>
+    <div class="modal-foot"><button class="abtn" id="confirm-cancel" style="color:var(--text-2); background:#fff; border-color:var(--line)">취소</button><button class="abtn" id="confirm-ok">삭제</button></div>
+  </div>
+</div>
+
+<!-- modal -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modal-title">항목</h3><button class="modal-x" id="modal-x" aria-label="닫기">✕</button></div>
+    <div class="modal-body" id="modal-fields"></div>
+    <div class="modal-foot"><button class="abtn" id="modal-cancel" style="color:var(--text-2); background:#fff; border-color:var(--line)">취소</button><button class="abtn primary" id="modal-save">저장</button></div>
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!--  STATIC DATA (연구 분야 카드 — 편집 UI 대상 아님)               -->
+<!-- ============================================================= -->
+<script id="static-data">
+const RESEARCH = [
+  { tag:"Health Informatics", ko:"의료정보", en:"Health Informatics",
+    desc:"건강 데이터를 수집·저장·분석하여 의료 서비스의 질을 높입니다. EMR, 원격의료 시스템 등을 포함합니다.",
+    items:["의료 빅데이터 관리·분석","원격 의료 시스템 개발","개인 맞춤형 건강관리 플랫폼"], hue:"a" },
+  { tag:"Clinical Decision Support", ko:"의료 결정 지원 시스템", en:"CDSS",
+    desc:"AI와 빅데이터로 의료진의 의사결정을 지원해 정확한 진단과 최적 치료를 제시합니다.",
+    items:["AI 기반 진단 알고리즘","의료 영상·신호 처리","설명가능 의료 진단 AI"], hue:"b" },
+  { tag:"Brain-Computer Interface", ko:"뇌-컴퓨터 인터페이스", en:"BCI",
+    desc:"뇌와 컴퓨터를 연결해 기계를 구동합니다. 신경과학·컴퓨터공학·의공학의 융합 연구입니다.",
+    items:["뇌파 신호 분석·해석","신경 인터페이스 장치 개발","BCI 기반 보조 기술"], hue:"c" },
+];
+</script>
+
+<!-- ============================================================= -->
+<!--  EDITABLE DATA — "관리 모드"로 편집됩니다. 직접 수정도 가능.      -->
+<!-- ============================================================= -->
+<script id="data">
+/* 소식: date, cat(학회/게재/수상/행사/기타), title, body, img(URL 또는 비움) */
+const NEWS = [
+  { date:"2026.06", cat:"학회", title:"국제 학회 참석 및 포스터 발표", body:"해외에서 열린 국제 학회에 참석해 EEG 기반 BCI 연구 결과를 포스터로 발표했습니다.", img:"" },
+  { date:"2026.05", cat:"게재", title:"파킨슨병 EEG 연결성 논문 게재 확정", body:"뇌 기능적 연결성과 그래프 신경망을 활용한 파킨슨병 연구가 국제 저널에 게재 확정되었습니다.", img:"" },
+  { date:"2026.04", cat:"수상", title:"교내 우수연구상 수상", body:"설명가능 의료 AI 연구 성과를 인정받아 교내 우수연구상을 수상했습니다.", img:"" },
+  { date:"2026.03", cat:"행사", title:"신입 구성원 환영 워크숍", body:"새 학기를 맞아 신입 대학원생·인턴 환영 워크숍을 진행했습니다.", img:"" },
+];
+
+/* 구성원: group(Ph.D. Students/M.S. Students/Undergraduate Interns/Alumni), name, deg, focus, now(졸업생 현재 소속, 선택) */
+const PEOPLE = [
+  { group:"Ph.D. Students", name:"[성함]", deg:"Ph.D. Candidate", focus:"EEG 기반 BCI · 설명가능 AI", now:"" },
+  { group:"Ph.D. Students", name:"[성함]", deg:"Ph.D. Student", focus:"GNN 기능적 연결성 · 파킨슨병", now:"" },
+  { group:"M.S. Students", name:"[성함]", deg:"M.S. Student", focus:"의료영상 분석 (OCTA · CT)", now:"" },
+  { group:"M.S. Students", name:"[성함]", deg:"M.S. Student", focus:"추천 시스템 · 그래프 학습", now:"" },
+  { group:"M.S. Students", name:"[성함]", deg:"M.S. Student", focus:"물리기반 신경망 (PINN)", now:"" },
+  { group:"Undergraduate Interns", name:"[성함]", deg:"Intern", focus:"데이터 전처리 · 시각화", now:"" },
+  { group:"Undergraduate Interns", name:"[성함]", deg:"Intern", focus:"모델 구현 · 실험", now:"" },
+  { group:"Alumni", name:"[졸업생]", deg:"M.S. 2024", focus:"EEG 신호 분류", now:"삼성전자" },
+  { group:"Alumni", name:"[졸업생]", deg:"Ph.D. 2023", focus:"GNN 기반 연결성", now:"OO대 박사후연구원" },
+];
+
+/* 논문/특허: year, title, authors(연구실 저자는 **이름**), venue, tags[], links[{label,url}] */
+const PAPERS = [
+  { year:2026, title:"Intrinsically Explainable AI for EEG Motor Imagery BCI via Prototype-Based Classification",
+    authors:"**Author A**, Author B, **Corresponding Author**", venue:"Under Review, 2026",
+    badges:[], tags:["EEG","BCI","Explainable AI"], links:[{label:"PDF",url:"#"},{label:"Code",url:"#"}] },
+  { year:2025, title:"BrainRoiGNN: Anatomy-Aware Graph Neural Networks for Parkinson's Disease from EEG Connectivity",
+    authors:"**Author A**, Author C, **Corresponding Author**", venue:"Artificial Intelligence in Medicine (AIIM)",
+    badges:["Q1","상위 10%"], tags:["GNN","EEG","wPLI"], links:[{label:"DOI",url:"#"},{label:"PDF",url:"#"}] },
+  { year:2025, title:"A Reaction-Diffusion Physics-Informed Model of Oxygen Transport in Retinal OCTA",
+    authors:"Author D, **Author A**", venue:"Computer Methods and Programs in Biomedicine (CMPB)",
+    badges:["Q1"], tags:["PINN","OCTA","Medical Imaging"], links:[{label:"DOI",url:"#"}] },
+  { year:2024, title:"Functional Connectivity Meets Attention: A Controlled Study on GNN Adjacency for Motor Imagery",
+    authors:"**Author A**, Author E", venue:"Brain Sciences",
+    badges:["Q2"], tags:["GNN","BCI","Connectivity"], links:[{label:"PDF",url:"#"},{label:"Code",url:"#"}] },
+  { year:2024, title:"Explainable Two-Stage Retinal Disease Classification with Physics-Informed Concepts",
+    authors:"Author F, **Corresponding Author**", venue:"IEEE Access",
+    badges:["Q2"], tags:["Explainable AI","Fundus","Medical Imaging"], links:[{label:"DOI",url:"#"}] },
+  { year:2023, title:"LightGCN-Based Recommendation with Learnable Bayesian Personalized Ranking",
+    authors:"Author G, **Author A**", venue:"Expert Systems with Applications (ESWA)",
+    badges:["Q1","상위 5%"], tags:["Recommender","Graph Learning"], links:[{label:"DOI",url:"#"},{label:"PDF",url:"#"}] },
+];
+
+const PATENTS = [
+  { year:2025, title:"뇌파 기능적 연결성 기반 신경질환 진단 보조 장치 및 방법",
+    authors:"**발명자 A**, 발명자 B", venue:"등록 · 제10-XXXXXXX호", tags:["등록","EEG","진단보조"], links:[{label:"KIPRIS",url:"#"}] },
+  { year:2025, title:"프로토타입 기반 설명가능 생체신호 분류 시스템",
+    authors:"**발명자 A**", venue:"출원 · 제10-2025-XXXXXXX호", tags:["출원","XAI","신호분류"], links:[{label:"KIPRIS",url:"#"}] },
+  { year:2024, title:"OCTA 영상의 미세혈관 산소 수송 추정 방법",
+    authors:"발명자 C, **발명자 A**", venue:"등록 · 제10-XXXXXXX호", tags:["등록","OCTA","의료영상"], links:[{label:"KIPRIS",url:"#"}] },
+  { year:2024, title:"그래프 신경망을 이용한 운동심상 분류 장치",
+    authors:"**발명자 A**, 발명자 D", venue:"출원 · 제10-2024-XXXXXXX호", tags:["출원","GNN","BCI"], links:[{label:"KIPRIS",url:"#"}] },
+];
+
+/* 교수 정보: about/education/recognition 은 한 줄에 하나씩. **텍스트** 로 굵게 표시 가능. */
+const PROF = {
+  name:"Prof. [교수님 성함]",
+  role:"Director, Medical Artificial Intelligence Laboratory",
+  dept:"Department of ICT Convergence, University of Ulsan",
+  deptShort:"ICT융합학부",
+  lab:"Medical AI Laboratory",
+  office:"공학관 7-222",
+  email:"leeseho@ulsan.ac.kr",
+  photo:"",
+  about:"의료 인공지능, 뇌-컴퓨터 인터페이스, 설명가능 AI를 중심으로 연구를 수행하고 있습니다. 생체 신호와 의료 영상에서 임상적으로 해석 가능한 정보를 추출하고, 이를 실제 진단·치료 의사결정에 연결하는 방법론을 개발합니다.\nUNIST AI대학원, 울산대학교병원 등과 다학제 공동연구를 진행하며, 벤치마크 성능을 넘어 원리를 규명하는 연구를 지향합니다.",
+  interests:["EEG / Motor Imagery BCI","GNN 기반 기능적 연결성","Explainable AI","Medical Imaging (OCTA · CT)","Physics-Informed Neural Networks","Recommender Systems"],
+  education:["**Ph.D.** — 컴퓨터공학 / 인공지능 · [대학교 · 연도]","**M.S.** — [전공] · [대학교 · 연도]","**B.S.** — [전공] · [대학교 · 연도]"],
+  recognition:["주요 국제 저널(AIIM, CMPB, ESWA 등) 논문 게재 및 리뷰 활동","정부·기업 연구과제(삼성 SRFC 등) 수행","학부·대학원 인공지능 및 데이터사이언스 강의"],
+};
+
+/* 관리자 비밀번호(SHA-256). 기본값 = "mailab2026" — 관리 모드에서 "비밀번호 변경"으로 꼭 바꾸세요. */
+const ADMIN_HASH = "aacb62027970036147bb8fabc16aef284e50604f9b49a5c4fda661897b14f4eb";
+</script>
+
+<!-- ============================================================= -->
+<!--  APP LOGIC                                                     -->
+<!-- ============================================================= -->
+<script>
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bold=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ---- non-blocking UI helpers (sandbox-safe replacements for alert/confirm) ---- */
+function toast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div'); t.id='toast'; document.body.appendChild(t);}
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3400);
+}
+let confirmCb=null;
+function askConfirm(msg, okLabel='삭제', danger=true){
+  const el=document.getElementById('confirm'); if(!el)return Promise.resolve(true);
+  document.getElementById('confirm-msg').textContent=msg;
+  const ok=document.getElementById('confirm-ok'); ok.textContent=okLabel;
+  ok.style.background=danger?'#c0392b':'var(--green)'; ok.style.borderColor=danger?'#c0392b':'var(--green)'; ok.style.color='#fff';
+  el.classList.add('open');
+  return new Promise(res=>{confirmCb=res;});
+}
+function closeConfirm(v){document.getElementById('confirm').classList.remove('open'); const cb=confirmCb; confirmCb=null; if(cb)cb(v);}
+
+/* ---- DB ---- */
+const DEFAULTS={news:NEWS, people:PEOPLE, papers:PAPERS, patents:PATENTS, prof:PROF};
+let DB=clone(DEFAULTS);
+try{const s=localStorage.getItem('mailab_db'); if(s){const p=JSON.parse(s); if(p&&p.papers&&p.people&&p.news&&p.patents)DB=p;}}catch(e){}
+['news','people','papers','patents'].forEach(k=>{if(!Array.isArray(DB[k]))DB[k]=clone(DEFAULTS[k]);});
+if(!DB.prof||typeof DB.prof!=='object')DB.prof=clone(DEFAULTS.prof);
+function saveDB(){try{localStorage.setItem('mailab_db',JSON.stringify(DB));}catch(e){}}
+
+/* ---- admin auth (client-side password gate; publishing still requires re-upload) ---- */
+function sha256(ascii){
+  function R(v,a){return (v>>>a)|(v<<(32-a));}
+  var mp=Math.pow, mw=mp(2,32), L='length', i,j,result='';
+  var words=[], bitLen=ascii[L]*8;
+  var hash=sha256.h=sha256.h||[], k=sha256.k=sha256.k||[], pc=k[L];
+  var comp={};
+  for(var c=2; pc<64; c++){ if(!comp[c]){for(i=0;i<313;i+=c){comp[i]=c;} hash[pc]=(mp(c,.5)*mw)|0; k[pc++]=(mp(c,1/3)*mw)|0;} }
+  ascii+='\x80'; while(ascii[L]%64-56)ascii+='\x00';
+  for(i=0;i<ascii[L];i++){j=ascii.charCodeAt(i); if(j>>8)return; words[i>>2]|=j<<((3-i)%4)*8;}
+  words[words[L]]=((bitLen/mw)|0); words[words[L]]=(bitLen);
+  for(j=0;j<words[L];){
+    var w=words.slice(j,j+=16), oh=hash; hash=hash.slice(0,8);
+    for(i=0;i<64;i++){
+      var w15=w[i-15], w2=w[i-2], a=hash[0], e=hash[4];
+      var t1=hash[7]+(R(e,6)^R(e,11)^R(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]
+        +(w[i]=(i<16)?w[i]:(w[i-16]+(R(w15,7)^R(w15,18)^(w15>>>3))+w[i-7]+(R(w2,17)^R(w2,19)^(w2>>>10)))|0);
+      var t2=(R(a,2)^R(a,13)^R(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(t1+t2)|0].concat(hash); hash[4]=(hash[4]+t1)|0;
+    }
+    for(i=0;i<8;i++){hash[i]=(hash[i]+oh[i])|0;}
+  }
+  for(i=0;i<8;i++){for(j=3;j+1;j--){var b=(hash[i]>>(j*8))&255; result+=((b<16)?0:'')+b.toString(16);}}
+  return result;
+}
+const hashPw=pw=>sha256(unescape(encodeURIComponent(String(pw))));
+let adminHash=(typeof ADMIN_HASH!=='undefined')?ADMIN_HASH:'';
+try{const h=localStorage.getItem('mailab_hash'); if(h)adminHash=h;}catch(e){}
+let authed=false; try{authed=sessionStorage.getItem('mailab_authed')==='1';}catch(e){}
+let counted=false;
+
+/* ---- palette-aware tile visuals ---- */
+const HUES={ a:['#0E9D57','#22B872'], b:['#0A6E42','#12B36A'], c:['#22B872','#F3B63C'] };
+function tileSVG(pair, seed=0){
+  const [c1,c2]=pair; const id='g'+Math.random().toString(36).slice(2,7);
+  let dots=''; for(let i=0;i<7;i++){const x=20+((seed*37+i*53)%440),y=20+((seed*61+i*29)%118);
+    dots+=`<circle cx="${x}" cy="${y}" r="${2+i%3}" fill="#fff" opacity="${.22+.1*(i%3)}"/>`;}
+  return `<svg viewBox="0 0 480 158" preserveAspectRatio="xMidYMid slice"><rect width="480" height="158" fill="url(#${id})"/>
+    <g stroke="#fff" stroke-opacity=".22" stroke-width="1.3" fill="none"><path d="M0 120 Q80 70 160 110 T320 90 T480 120"/><path d="M0 90 Q120 130 240 80 T480 100"/></g>${dots}
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="480" y2="158"><stop stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs></svg>`;
+}
+function avatarSVG(seed){
+  const pairs=[HUES.a,HUES.b,HUES.c]; const [c1,c2]=pairs[seed%3]; const id='av'+seed+Math.random().toString(36).slice(2,5);
+  return `<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice"><rect width="200" height="200" fill="url(#${id})"/>
+    <circle cx="100" cy="82" r="34" fill="rgba(255,255,255,.24)"/><path d="M44 200 C44 140 70 118 100 118 C130 118 156 140 156 200 Z" fill="rgba(255,255,255,.24)"/>
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="200" y2="200"><stop stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs></svg>`;
+}
+function newsImg(seed){
+  const [c1,c2]=Object.values(HUES)[seed%3]; const id='ni'+seed+Math.random().toString(36).slice(2,5);
+  return `<svg viewBox="0 0 480 300" preserveAspectRatio="xMidYMid slice"><rect width="480" height="300" fill="url(#${id})"/>
+    <g stroke="#fff" stroke-opacity=".22" stroke-width="1.5" fill="none"><path d="M0 220 Q120 140 240 210 T480 190"/><path d="M0 170 Q120 240 240 160 T480 200"/></g>
+    <circle cx="380" cy="80" r="30" fill="#fff" opacity=".18"/>
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="480" y2="300"><stop stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs></svg>`;
+}
+function actionBtns(type,idx){return `<div class="acts"><button class="act" data-edit="${type}:${idx}">수정</button><button class="act del" data-del="${type}:${idx}">삭제</button></div>`;}
+
+/* ---- research (static) ---- */
+$('#research-cards').innerHTML = RESEARCH.map((r,i)=>`
+  <article class="rcard"><div class="vis">${tileSVG(HUES[r.hue],i+1)}</div>
+    <div class="body"><div class="tag">${esc(r.tag)}</div><h3>${esc(r.ko)}</h3><div class="en">${esc(r.en)}</div>
+      <p>${esc(r.desc)}</p><ul>${r.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></article>`).join('');
+
+/* ---- news (home preview + full board with filter) ---- */
+let newsCat='전체';
+function renderNewsHome(){
+  const latest=DB.news.slice(0,3);
+  $('#news-home').innerHTML=latest.map((n,i)=>`
+    <article class="nh"><div class="img">${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
+      <div class="b"><div class="meta"><span class="cat">${esc(n.cat)}</span><time>${esc(n.date)}</time></div>
+        <h4>${esc(n.title)}</h4></div></article>`).join('') || `<div class="empty">// 소식이 없습니다</div>`;
+}
+function renderNews(){
+  const cats=['전체',...[...new Set(DB.news.map(n=>n.cat))]];
+  $('#news-filters').innerHTML=[
+    ...cats.map(c=>`<button class="fchip${newsCat===c?' on':''}" data-nc="${esc(c)}">${esc(c)}</button>`),
+    `<button class="add-btn admin-only" data-add="news">+ 소식 추가</button>`].join('');
+  const rows=DB.news.map((n,idx)=>({n,idx})).filter(({n})=>newsCat==='전체'||n.cat===newsCat);
+  $('#news-board').innerHTML=rows.length?rows.map(({n,idx},i)=>`
+    <article class="ncard">${actionBtns('news',idx)}
+      <div class="img">${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
+      <div class="b"><div class="meta"><span class="cat">${esc(n.cat)}</span><time>${esc(n.date)}</time></div>
+        <h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></div></article>`).join('') : `<div class="empty">// 해당 분류의 소식이 없습니다</div>`;
+  renderNewsHome();
+}
+
+/* ---- people (grouped, incl. Alumni) ---- */
+const GROUP_ORDER=['Ph.D. Students','M.S. Students','Undergraduate Interns','Alumni'];
+function renderPeople(){
+  const present=GROUP_ORDER.filter(g=>DB.people.some(p=>p.group===g));
+  const extra=[...new Set(DB.people.map(p=>p.group))].filter(g=>!GROUP_ORDER.includes(g));
+  const groups=[...present,...extra];
+  let html=groups.map(g=>{
+    const rows=DB.people.map((p,idx)=>({p,idx})).filter(({p})=>p.group===g).map(({p,idx},i)=>`
+      <article class="pcard">${actionBtns('people',idx)}<div class="ph">${avatarSVG(i+g.length)}</div>
+        <div class="info"><div class="nm">${esc(p.name)}</div><div class="deg">${esc(p.deg)}</div>
+          <div class="fo">${esc(p.focus)}</div>${p.now?`<div class="now">→ 현재: ${esc(p.now)}</div>`:''}</div></article>`).join('');
+    return `<div class="grp-h">${esc(g)}</div><div class="people-grid">${rows}</div>`;
+  }).join('');
+  html+=`<div style="margin-top:26px"><button class="add-btn admin-only" data-add="people">+ 구성원 추가</button></div>`;
+  $('#people-groups').innerHTML=html;
+}
+
+/* ---- board (papers / patents) ---- */
+const linkIcon=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>`;
+function makeBoard(key, boardId, filtersId, searchId){
+  let year='all', term='';
+  function render(){
+    const years=[...new Set(DB[key].map(d=>d.year))].sort((a,b)=>b-a);
+    $('#'+filtersId).innerHTML=[
+      `<button class="fchip${year==='all'?' on':''}" data-y="all">전체</button>`,
+      ...years.map(y=>`<button class="fchip${String(year)===String(y)?' on':''}" data-y="${y}">${y}</button>`),
+      `<button class="add-btn admin-only" data-add="${key}">+ ${key==='papers'?'논문':'특허'} 추가</button>`].join('');
+    const rows=DB[key].map((d,idx)=>({d,idx})).filter(({d})=>{
+      const okY=year==='all'||String(d.year)===String(year);
+      const hay=(d.title+' '+d.authors+' '+d.venue+' '+(d.tags||[]).join(' ')).toLowerCase();
+      return okY&&hay.includes(term);
+    }).sort((a,b)=>b.d.year-a.d.year);
+    $('#'+boardId).innerHTML=rows.length?rows.map(({d,idx},i)=>`
+      <article class="pub"><div class="thumb">${d.img?`<img src="${esc(d.img)}" alt="" style="width:100%;height:100%;object-fit:cover">`:tileSVG(Object.values(HUES)[i%3], d.year+i)}</div>
+        <div><div class="yr">${esc(d.year)}${(d.badges||[]).map(b=>`<span class="badge-pill${String(b).includes('%')?' pct':''}">${esc(b)}</span>`).join('')}</div><h3>${esc(d.title)}</h3><div class="auth">${bold(d.authors)}</div>
+          <div class="venue">${esc(d.venue)}</div><div class="ptags">${(d.tags||[]).map(t=>`<span class="pt">${esc(t)}</span>`).join('')}</div></div>
+        <div class="links">${(d.links||[]).map(l=>`<a class="plink" href="${esc(l.url)}" target="_blank" rel="noopener">${linkIcon}${esc(l.label)}</a>`).join('')}${actionBtns(key,idx)}</div>
+      </article>`).join('') : `<div class="empty">// 항목이 없습니다</div>`;
+  }
+  $('#'+filtersId).addEventListener('click',e=>{const b=e.target.closest('.fchip'); if(!b)return; year=b.dataset.y; render();});
+  $('#'+searchId).addEventListener('input',e=>{term=e.target.value.trim().toLowerCase(); render();});
+  return {render, name:key};
+}
+const paperBoard=makeBoard('papers','paper-board','paper-filters','paper-search');
+const patentBoard=makeBoard('patents','patent-board','patent-filters','patent-search');
+
+/* ---- badges + representative-image (green) panels ---- */
+const BADGE_OPTS=['Q1','Q2','Q3','Q4','상위 1%','상위 5%','상위 10%'];
+const DEFAULT_PAPERS_ART=`<svg viewBox="0 0 480 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <rect width="480" height="360" fill="rgba(255,255,255,.03)"/>
+  <g stroke="#F9CE6E" stroke-width="2" fill="none" opacity=".85"><path d="M0 250 Q40 250 60 200 T110 240 T160 150 T210 250 T260 120 T310 240 T360 180 T410 250 T480 210"/></g>
+  <g stroke="#22B872" stroke-width="2" fill="none" opacity=".8"><path d="M0 290 Q50 200 90 280 T170 250 T250 300 T330 230 T410 290 T480 260"/></g>
+  <g fill="#fff"><circle cx="120" cy="90" r="4"/><circle cx="300" cy="70" r="4"/><circle cx="380" cy="120" r="4"/><circle cx="200" cy="130" r="3" fill="#F9CE6E"/><circle cx="420" cy="60" r="3" fill="#B6E0C6"/></g>
+  <g stroke="#fff" stroke-opacity=".28" stroke-width="1.2"><path d="M120 90 L200 130 L300 70 M300 70 L380 120 M200 130 L380 120"/></g></svg>`;
+const DEFAULT_PATENTS_ART=`<svg viewBox="0 0 480 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <rect width="480" height="360" fill="rgba(255,255,255,.03)"/>
+  <g transform="translate(240 180)"><circle r="120" fill="none" stroke="#B6E0C6" stroke-opacity=".3" stroke-width="1.5"/>
+    <circle r="80" fill="none" stroke="#F9CE6E" stroke-opacity=".4" stroke-width="1.5"/>
+    <path d="M0 -140 L36 -46 L136 -46 L56 16 L86 112 L0 52 L-86 112 L-56 16 L-136 -46 L-36 -46 Z" fill="none" stroke="url(#pg2)" stroke-width="2.5" opacity=".9"/>
+    <circle r="26" fill="url(#pg2)" opacity=".9"/><text y="8" text-anchor="middle" font-family="IBM Plex Mono" font-size="20" fill="#0C3325" font-weight="600">IP</text></g>
+  <defs><linearGradient id="pg2" x1="-140" y1="-140" x2="140" y2="140"><stop stop-color="#22B872"/><stop offset="1" stop-color="#F9CE6E"/></linearGradient></defs></svg>`;
+function renderArt(){
+  $('#papers-art').innerHTML = DEFAULT_PAPERS_ART;
+  $('#patents-art').innerHTML = DEFAULT_PATENTS_ART;
+}
+
+/* ---- professor (data-driven) ---- */
+function renderProf(){
+  const p=DB.prof||{};
+  const paras=String(p.about||'').split(/\n+/).filter(Boolean).map(t=>`<p>${esc(t)}</p>`).join('');
+  const chips=(p.interests||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join('');
+  const edu=(p.education||[]).map(x=>`<li>${bold(x)}</li>`).join('');
+  const rec=(p.recognition||[]).map(x=>`<li>${bold(x)}</li>`).join('');
+  const photo=p.photo?`<img src="${esc(p.photo)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`
+    :`<svg viewBox="0 0 320 400" preserveAspectRatio="xMidYMid slice"><rect width="320" height="400" fill="url(#pgp)"/>
+        <circle cx="160" cy="150" r="62" fill="rgba(255,255,255,.16)"/><path d="M70 400 C70 300 110 260 160 260 C210 260 250 300 250 400 Z" fill="rgba(255,255,255,.16)"/>
+        <defs><linearGradient id="pgp" x1="0" y1="0" x2="320" y2="400"><stop stop-color="#0A6E42"/><stop offset="1" stop-color="#0C3325"/></linearGradient></defs></svg>`;
+  $('#prof-mount').innerHTML=`
+    <div class="prof-card">
+      <div class="prof-photo">${photo}</div>
+      <div class="prof-meta">
+        <div class="row"><span class="k">Office</span><span class="v">${esc(p.office)}</span></div>
+        <div class="row"><span class="k">Email</span><span class="v"><a href="mailto:${esc(p.email)}" style="color:var(--green)">${esc(p.email)}</a></span></div>
+        <div class="row"><span class="k">Dept.</span><span class="v">${esc(p.deptShort)}</span></div>
+        <div class="row"><span class="k">Lab</span><span class="v">${esc(p.lab)}</span></div>
+      </div>
+    </div>
+    <div>
+      <h2>${esc(p.name)}</h2>
+      <div class="role">${esc(p.role)}</div>
+      <div class="dept">${esc(p.dept)}</div>
+      ${paras?`<div class="bio-block"><h4>About</h4>${paras}</div>`:''}
+      ${chips?`<div class="bio-block"><h4>Research Interests</h4><div class="chips">${chips}</div></div>`:''}
+      ${edu?`<div class="bio-block"><h4>Education</h4><ul class="timeline">${edu}</ul></div>`:''}
+      ${rec?`<div class="bio-block"><h4>Selected Recognition</h4><ul>${rec}</ul></div>`:''}
+    </div>`;
+}
+
+/* ---- auto-computed numbers (home hero + patent mini-stats) ---- */
+function applyStats(){
+  const vals={
+    papers: DB.papers.length,
+    patents: DB.patents.length,
+    areas: (typeof RESEARCH!=='undefined'?RESEARCH.length:0),
+    members: DB.people.filter(p=>p.group!=='Alumni').length
+  };
+  $$('#home [data-stat]').forEach(el=>{const v=vals[el.dataset.stat];
+    if(v==null)return; el.dataset.count=v; if(counted)el.textContent=v;});
+}
+
+function renderAll(){
+  renderProf(); renderArt(); renderNews(); renderPeople(); paperBoard.render(); patentBoard.render();
+  $('#pp-count').textContent=DB.papers.length;
+  $('#pp-q1').textContent=DB.papers.filter(p=>(p.badges||[]).includes('Q1')).length;
+  $('#pt-count').textContent=DB.patents.length;
+  const has=(p,t)=>(p.tags||[]).some(x=>String(x).includes(t));
+  $('#pt-reg').textContent=DB.patents.filter(p=>has(p,'등록')).length;
+  $('#pt-pend').textContent=DB.patents.filter(p=>has(p,'출원')).length;
+  applyStats();
+}
+renderAll();
+
+/* ---- edit forms ---- */
+const SCHEMA={
+  papers:{title:'논문', fields:[
+    {k:'year',label:'연도',type:'number'},{k:'title',label:'제목',type:'text'},
+    {k:'authors',label:'저자  (연구실 저자는 **이름** 처럼 별표로 감싸면 굵게)',type:'text'},
+    {k:'venue',label:'학술지 / 학회',type:'text'},
+    {k:'badges',label:'등급 배지  (연도 옆에 표기됩니다)',type:'checks',opts:BADGE_OPTS},
+    {k:'img',label:'대표 이미지  (목록 왼쪽 패널)',type:'image'},
+    {k:'tags',label:'태그  (쉼표로 구분)',type:'tags'},
+    {k:'links',label:'링크  (한 줄에 하나: 라벨|URL)',type:'links'}]},
+  patents:{title:'특허', fields:[
+    {k:'year',label:'연도',type:'number'},{k:'title',label:'명칭',type:'text'},
+    {k:'authors',label:'발명자  (연구실 발명자는 **이름**)',type:'text'},
+    {k:'venue',label:'상태 / 번호  (예: 등록 · 제10-XXXXXXX호)',type:'text'},
+    {k:'img',label:'대표 이미지  (목록 왼쪽 패널)',type:'image'},
+    {k:'tags',label:'태그  (쉼표로 구분)',type:'tags'},{k:'links',label:'링크  (라벨|URL)',type:'links'}]},
+  people:{title:'구성원', fields:[
+    {k:'group',label:'구분',type:'select',opts:GROUP_ORDER},
+    {k:'name',label:'이름',type:'text'},{k:'deg',label:'학위 / 직함  (예: Ph.D. Student, M.S. 2024)',type:'text'},
+    {k:'focus',label:'연구 주제',type:'text'},{k:'now',label:'현재 소속  (졸업생만, 선택)',type:'text'}]},
+  news:{title:'소식', fields:[
+    {k:'date',label:'날짜  (예: 2026.06)',type:'text'},
+    {k:'cat',label:'분류',type:'select',opts:['학회','게재','수상','행사','기타']},
+    {k:'title',label:'제목',type:'text'},{k:'body',label:'내용',type:'textarea'},{k:'img',label:'사진',type:'image'}]},
+  prof:{title:'교수 정보', single:true, fields:[
+    {k:'name',label:'성함 / 표기  (예: Prof. 홍길동)',type:'text'},
+    {k:'role',label:'직함 (영문)',type:'text'},
+    {k:'dept',label:'소속 (영문 표기)',type:'text'},
+    {k:'deptShort',label:'소속 (국문)',type:'text'},
+    {k:'lab',label:'연구실명',type:'text'},
+    {k:'office',label:'연구실 호실',type:'text'},
+    {k:'email',label:'이메일',type:'text'},
+    {k:'photo',label:'사진',type:'image'},
+    {k:'about',label:'소개  (엔터로 문단 구분)',type:'textarea'},
+    {k:'interests',label:'연구 관심사  (쉼표로 구분)',type:'tags'},
+    {k:'education',label:'학력  (한 줄에 하나, **굵게** 가능)',type:'lines'},
+    {k:'recognition',label:'주요 활동  (한 줄에 하나)',type:'lines'}]},
+};
+let formCtx={type:null, idx:null, single:false, storeKey:null, img:'', imgKey:null};
+function openForm(type, idx){
+  const sch=SCHEMA[type]; if(!sch)return; const single=!!sch.single; const storeKey=sch.store||type;
+  const item=single?(DB[storeKey]||{}):(idx!=null?DB[type][idx]:{});
+  const imgField=sch.fields.find(f=>f.type==='image');
+  formCtx={type, idx, single, storeKey, imgKey:imgField?imgField.k:null, img:imgField?(item[imgField.k]||''):''};
+  $('#modal-title').textContent=(single||idx!=null?'수정 · ':'추가 · ')+sch.title;
+  $('#modal-fields').innerHTML=sch.fields.map(f=>{
+    const v=item[f.k];
+    if(f.type==='textarea') return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}">${esc(v||'')}</textarea></div>`;
+    if(f.type==='lines') return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-lines="1">${esc((v||[]).join('\n'))}</textarea></div>`;
+    if(f.type==='select') return `<div class="field"><label>${esc(f.label)}</label><select data-k="${f.k}">${f.opts.map(o=>`<option${v===o?' selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+    if(f.type==='checks') return `<div class="field"><label>${esc(f.label)}</label><div class="checkrow">${f.opts.map(o=>`<label class="checkopt"><input type="checkbox" data-k="${f.k}" data-multi="1" value="${esc(o)}"${(v||[]).includes(o)?' checked':''}>${esc(o)}</label>`).join('')}</div></div>`;
+    if(f.type==='tags') return `<div class="field"><label>${esc(f.label)}</label><input type="text" data-k="${f.k}" data-tags="1" value="${esc((v||[]).join(', '))}"></div>`;
+    if(f.type==='links'){const val=(v||[]).map(l=>`${l.label}|${l.url}`).join('\n');
+      return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-links="1" placeholder="PDF|https://...">${esc(val)}</textarea></div>`;}
+    if(f.type==='image') return `<div class="field"><label>${esc(f.label)}</label><div class="img-field">
+        <div class="img-prev" id="imgprev">${formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기'}</div>
+        <input type="file" accept="image/*" id="imgfile"><input type="text" id="imgurl" placeholder="또는 이미지 URL 붙여넣기" value="${formCtx.img&&formCtx.img.indexOf('data:')!==0?esc(formCtx.img):''}"></div>
+        <div class="hint">파일을 올리면 사진이 파일 안에 함께 저장됩니다.</div></div>`;
+    return `<div class="field"><label>${esc(f.label)}</label><input type="${f.type}" data-k="${f.k}" value="${esc(v==null?'':v)}"></div>`;
+  }).join('');
+  const fileEl=$('#imgfile');
+  if(fileEl){
+    fileEl.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return;
+      const rd=new FileReader(); rd.onload=()=>{formCtx.img=rd.result; $('#imgprev').innerHTML=`<img src="${formCtx.img}">`; $('#imgurl').value='';}; rd.readAsDataURL(file);});
+    $('#imgurl').addEventListener('input',e=>{formCtx.img=e.target.value.trim(); $('#imgprev').innerHTML=formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기';});
+  }
+  $('#modal').classList.add('open');
+}
+function closeForm(){$('#modal').classList.remove('open');}
+function saveForm(){
+  const {type,idx,single,storeKey,imgKey}=formCtx; const obj={};
+  $$('#modal-fields [data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    if(el.dataset.multi){ if(!Array.isArray(obj[k]))obj[k]=[]; if(el.checked)obj[k].push(el.value); return; }
+    let val=el.value;
+    if(el.dataset.tags) val=val.split(',').map(s=>s.trim()).filter(Boolean);
+    else if(el.dataset.lines) val=val.split('\n').map(s=>s.trim()).filter(Boolean);
+    else if(el.dataset.links) val=val.split('\n').map(s=>s.trim()).filter(Boolean).map(line=>{const[label,...u]=line.split('|'); return {label:(label||'').trim(), url:(u.join('|')||'#').trim()};});
+    else if(el.type==='number') val=Number(val)||new Date().getFullYear();
+    obj[k]=val;
+  });
+  if(imgKey) obj[imgKey]=formCtx.img||'';
+  if(single) DB[storeKey]={...DB[storeKey],...obj};
+  else if(idx!=null) DB[type][idx]={...DB[type][idx],...obj}; else DB[type].push(obj);
+  saveDB(); renderAll(); closeForm();
+}
+
+/* ---- global edit clicks ---- */
+document.addEventListener('click',e=>{
+  const add=e.target.closest('[data-add]'); if(add){openForm(add.dataset.add,null); return;}
+  const ed=e.target.closest('[data-edit]'); if(ed){const p=ed.dataset.edit.split(':'); openForm(p[0], p[1]==='single'?null:+p[1]); return;}
+  const del=e.target.closest('[data-del]'); if(del){const p=del.dataset.del.split(':');
+    askConfirm('이 항목을 삭제하시겠습니까?','삭제').then(ok=>{ if(ok){DB[p[0]].splice(+p[1],1); saveDB(); renderAll(); toast('삭제되었습니다.');} }); return;}
+  const nc=e.target.closest('[data-nc]'); if(nc){newsCat=nc.dataset.nc; renderNews(); return;}
+});
+$('#modal-x').addEventListener('click',closeForm);
+$('#modal-cancel').addEventListener('click',closeForm);
+$('#modal-save').addEventListener('click',saveForm);
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeForm();});
+$('#confirm-ok').addEventListener('click',()=>closeConfirm(true));
+$('#confirm-cancel').addEventListener('click',()=>closeConfirm(false));
+$('#confirm-x').addEventListener('click',()=>closeConfirm(false));
+$('#confirm').addEventListener('click',e=>{if(e.target.id==='confirm')closeConfirm(false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm(); if($('#confirm').classList.contains('open'))closeConfirm(false);}});
+
+/* ---- edit mode toggle (password-gated) ---- */
+function setEdit(on){document.body.classList.toggle('editing',on);}
+
+/* login / password-change modal */
+let authMode='login'; // 'login' | 'change'
+function openAuth(mode){
+  authMode=mode; $('#auth-msg').textContent=''; $('#auth-pw1').value=''; $('#auth-pw2').value='';
+  if(mode==='change'){
+    $('#auth-title').textContent='비밀번호 변경'; $('#auth-l1').textContent='새 비밀번호';
+    $('#auth-f2').style.display=''; $('#auth-go').textContent='변경';
+  }else{
+    $('#auth-title').textContent='관리자 로그인'; $('#auth-l1').textContent='비밀번호';
+    $('#auth-f2').style.display='none'; $('#auth-go').textContent='로그인';
+  }
+  $('#auth').classList.add('open'); setTimeout(()=>$('#auth-pw1').focus(),50);
+}
+function closeAuth(){$('#auth').classList.remove('open');}
+function submitAuth(){
+  const pw1=$('#auth-pw1').value;
+  if(authMode==='login'){
+    if(!pw1){$('#auth-msg').textContent='비밀번호를 입력하세요.'; return;}
+    if(hashPw(pw1)===adminHash){
+      authed=true; try{sessionStorage.setItem('mailab_authed','1');}catch(e){}
+      closeAuth(); setEdit(true);
+    }else{$('#auth-msg').textContent='비밀번호가 올바르지 않습니다.';}
+  }else{
+    const pw2=$('#auth-pw2').value;
+    if(pw1.length<4){$('#auth-msg').textContent='4자 이상으로 설정하세요.'; return;}
+    if(pw1!==pw2){$('#auth-msg').textContent='두 비밀번호가 일치하지 않습니다.'; return;}
+    adminHash=hashPw(pw1); try{localStorage.setItem('mailab_hash',adminHash);}catch(e){}
+    closeAuth();
+    toast('비밀번호가 변경되었습니다. "사이트 파일로 저장" 후 재업로드해야 공개본에 적용됩니다.');
+  }
+}
+$('#auth-go').addEventListener('click',submitAuth);
+$('#auth-x').addEventListener('click',closeAuth);
+$('#auth-cancel').addEventListener('click',closeAuth);
+$('#auth').addEventListener('click',e=>{if(e.target.id==='auth')closeAuth();});
+$('#auth-pw1').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth();});
+$('#auth-pw2').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth();});
+
+$('#fab').addEventListener('click',()=>{ if(authed)setEdit(true); else openAuth('login'); });
+$('#ab-done').addEventListener('click',()=>setEdit(false));
+$('#ab-logout').addEventListener('click',()=>{
+  authed=false; try{sessionStorage.removeItem('mailab_authed');}catch(e){}
+  setEdit(false); toast('로그아웃되었습니다.');
+});
+$('#ab-pw').addEventListener('click',()=>openAuth('change'));
+$('#ab-reset').addEventListener('click',()=>{
+  askConfirm('모든 편집 내용을 파일 기본값으로 되돌립니다. 계속할까요?','되돌리기',false).then(ok=>{ if(!ok)return;
+    try{localStorage.removeItem('mailab_db');}catch(e){} DB=clone(DEFAULTS);
+    ['news','people','papers','patents'].forEach(k=>{if(!Array.isArray(DB[k]))DB[k]=clone(DEFAULTS[k]);});
+    if(!DB.prof)DB.prof=clone(DEFAULTS.prof); renderAll(); toast('기본값으로 되돌렸습니다.');
+  });
+});
+
+/* ---- export updated site file ---- */
+function serializeData(){
+  const j=o=>JSON.stringify(o,null,2).replace(/<\/(script)/gi,'<\\/$1');
+  return `\nconst NEWS = ${j(DB.news)};\nconst PEOPLE = ${j(DB.people)};\nconst PAPERS = ${j(DB.papers)};\nconst PATENTS = ${j(DB.patents)};\nconst PROF = ${j(DB.prof)};\nconst ADMIN_HASH = ${JSON.stringify(adminHash)};\n`;
+}
+$('#ab-export').addEventListener('click',()=>{
+  const wasEditing=document.body.classList.contains('editing'); setEdit(false);
+  const dataEl=$('#data'); const orig=dataEl.textContent; dataEl.textContent=serializeData();
+  const ids=['research-cards','news-home','news-board','news-filters','people-groups','prof-mount','papers-art','patents-art','paper-board','patent-board','paper-filters','patent-filters','modal-fields'];
+  const saved={}; ids.forEach(id=>{const el=document.getElementById(id); if(el){saved[id]=el.innerHTML; el.innerHTML='';}});
+  const html='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+  dataEl.textContent=orig; ids.forEach(id=>{const el=document.getElementById(id); if(el)el.innerHTML=saved[id];});
+  renderAll(); if(wasEditing)setEdit(true);
+  try{
+    const blob=new Blob([html],{type:'text/html'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='index.html'; document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},100);
+    toast('index.html이 저장되었습니다. 호스팅에 재업로드하세요.');
+  }catch(err){toast('저장 중 문제가 발생했습니다: '+err.message);}
+});
+
+/* ---- contact -> mailto ---- */
+$('#c-send').addEventListener('click',()=>{
+  const n=$('#c-name').value||'(이름 미기재)', em=$('#c-email').value||'', r=$('#c-role').value, m=$('#c-msg').value||'';
+  const subj=encodeURIComponent(`[MAILAB 문의] ${r} — ${n}`);
+  const body=encodeURIComponent(`이름: ${n}\n이메일: ${em}\n구분: ${r}\n\n${m}`);
+  window.location.href=`mailto:leeseho@ulsan.ac.kr?subject=${subj}&body=${body}`;
+});
+
+/* ---- routing ---- */
+const pages=$$('.page');
+function go(id){
+  if(!document.getElementById(id)||!document.getElementById(id).classList.contains('page'))id='home';
+  pages.forEach(p=>p.classList.toggle('on',p.id===id));
+  $$('.menu a').forEach(a=>a.classList.toggle('active',a.dataset.go===id));
+  try{history.replaceState(null,'',id==='home'?'#':'#'+id);}catch(e){location.hash=id==='home'?'':id;}
+  window.scrollTo({top:0,behavior:'auto'}); $('#menu').classList.remove('open');
+  if(id==='home')startCounters();
+}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-go]'); if(!t)return; e.preventDefault(); go(t.dataset.go);});
+$('#burger').addEventListener('click',()=>$('#menu').classList.toggle('open'));
+
+/* ---- stat counters ---- */
+function startCounters(){
+  if(counted)return; counted=true;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  $$('#home [data-count]').forEach(el=>{const target=+el.dataset.count;
+    if(reduce){el.textContent=target;return;}
+    let s=null; const dur=1100;
+    const step=t=>{if(!s)s=t; const p=Math.min((t-s)/dur,1); el.textContent=Math.round((1-Math.pow(1-p,3))*target); if(p<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);});
+}
+
+go(location.hash.replace('#','')||'home');
+
+/* ---- hero neural animation (signature, pastel-green on light) ---- */
+(function(){
+  const cv=$('#neural'); if(!cv)return; const ctx=cv.getContext('2d');
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let W,H,DPR,nodes=[],edges=[],pulses=[],acc=0,last=0;
+  const layout=[[.5,.12],[.35,.2],[.65,.2],[.24,.34],[.5,.32],[.76,.34],[.15,.5],[.38,.5],[.62,.5],[.85,.5],
+    [.24,.66],[.5,.66],[.76,.66],[.35,.8],[.65,.8],[.5,.9],[.12,.22],[.88,.22],[.1,.75],[.9,.75]];
+  function resize(){
+    DPR=Math.min(devicePixelRatio||1,2); W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+    nodes=layout.map(([x,y])=>({x:x*W,y:y*H,r:2.4+Math.random()*2,ph:Math.random()*6.28}));
+    edges=[]; for(let a=0;a<nodes.length;a++)for(let b=a+1;b<nodes.length;b++){
+      const d=Math.hypot(nodes[a].x-nodes[b].x,nodes[a].y-nodes[b].y);
+      if(d<Math.min(W,H)*0.26)edges.push({a,b,w:Math.random()});}
+  }
+  function spawn(){if(!edges.length)return; const e=edges[(Math.random()*edges.length)|0];
+    pulses.push({e,t:0,sp:.006+Math.random()*.01,c:Math.random()<.5?'#0E9D57':'#F3B63C'});}
+  function frame(ts){
+    const dt=ts-last; last=ts; acc+=dt; ctx.clearRect(0,0,W,H); const time=ts/1000;
+    for(const e of edges){const A=nodes[e.a],B=nodes[e.b]; const pulse=(Math.sin(time*0.8+e.w*6)+1)/2;
+      ctx.strokeStyle=`rgba(14,157,87,${0.05+pulse*0.10})`; ctx.lineWidth=0.6+pulse*0.6;
+      ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();}
+    for(let i=pulses.length-1;i>=0;i--){const p=pulses[i]; p.t+=p.sp; if(p.t>=1){pulses.splice(i,1);continue;}
+      const A=nodes[p.e.a],B=nodes[p.e.b]; const x=A.x+(B.x-A.x)*p.t,y=A.y+(B.y-A.y)*p.t;
+      const g=ctx.createRadialGradient(x,y,0,x,y,7); g.addColorStop(0,p.c); g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,7,0,6.28); ctx.fill();}
+    for(const n of nodes){const b=(Math.sin(time*1.4+n.ph)+1)/2;
+      ctx.fillStyle=`rgba(10,110,66,${0.28+b*0.32})`; ctx.beginPath(); ctx.arc(n.x,n.y,n.r+b*0.8,0,6.28); ctx.fill();
+      ctx.strokeStyle=`rgba(243,182,60,${0.12+b*0.22})`; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(n.x,n.y,n.r+3+b*2,0,6.28); ctx.stroke();}
+    if(acc>380){acc=0; if(pulses.length<14)spawn();}
+    requestAnimationFrame(frame);
+  }
+  function staticFrame(){ctx.clearRect(0,0,W,H);
+    for(const e of edges){const A=nodes[e.a],B=nodes[e.b]; ctx.strokeStyle='rgba(14,157,87,.10)'; ctx.lineWidth=.8;
+      ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();}
+    for(const n of nodes){ctx.fillStyle='rgba(10,110,66,.5)'; ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,6.28); ctx.fill();}}
+  resize(); addEventListener('resize',()=>{resize(); if(reduce)staticFrame();});
+  if(reduce)staticFrame(); else requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
