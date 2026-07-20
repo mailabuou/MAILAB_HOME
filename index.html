@@ -244,6 +244,10 @@ section{padding:84px 0}
 .pub:hover{background:var(--mint); padding-left:18px; padding-right:18px}
 .pub .thumb{width:96px; height:76px; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
 .pub .thumb svg{width:100%; height:100%}
+.zoomable{position:relative; cursor:zoom-in}
+.zoomable::after{content:'⊕'; position:absolute; inset:0; display:grid; place-items:center; background:rgba(6,49,34,.52);
+  color:#fff; font-size:1.8rem; opacity:0; transition:.18s}
+.zoomable:hover::after,.zoomable:focus::after{opacity:1}
 .pub .yr{font-family:'IBM Plex Mono'; font-size:.76rem; color:var(--green); font-weight:600; letter-spacing:.04em}
 .badge-pill{display:inline-block; margin-left:7px; padding:2px 8px; border-radius:100px; font-family:'IBM Plex Mono';
   font-size:.64rem; font-weight:600; letter-spacing:.02em; vertical-align:middle;
@@ -356,10 +360,16 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
   display:grid; place-items:center; color:var(--text-3); font-family:'IBM Plex Mono'; font-size:.8rem}
 .img-prev img{width:100%; height:100%; object-fit:cover}
 .crop-wrap{display:grid; gap:10px; width:min(100%,270px); margin:0 auto}
+.crop-wrap.pub-crop{width:100%}
 .crop-canvas{width:100%; height:auto; display:block; border-radius:10px; background:#eef5f1; cursor:grab; touch-action:none}
 .crop-canvas.dragging{cursor:grabbing}
 .crop-tools{display:flex; align-items:center; gap:12px; font-family:'IBM Plex Mono'; font-size:.74rem; color:var(--text-2)}
 .crop-tools input{flex:1; accent-color:var(--green)}
+.lightbox{position:fixed; inset:0; z-index:120; display:none; place-items:center; padding:28px; background:rgba(3,25,17,.88)}
+.lightbox.open{display:grid}
+.lightbox img{max-width:min(1200px,92vw); max-height:88vh; object-fit:contain; border-radius:10px; background:#fff; box-shadow:var(--shadow-lg)}
+.lightbox-x{position:absolute; top:22px; right:24px; width:44px; height:44px; border:1px solid rgba(255,255,255,.45); border-radius:50%;
+  background:rgba(0,0,0,.25); color:#fff; font-size:1.35rem; cursor:pointer}
 .hint{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--text-3); margin-top:-6px; margin-bottom:14px}
 #toast{position:fixed; left:50%; bottom:84px; transform:translateX(-50%) translateY(10px); z-index:95;
   background:var(--green-ink); color:#fff; padding:13px 22px; border-radius:100px; font-size:.9rem; font-weight:500;
@@ -705,6 +715,11 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
   </div>
 </div>
 
+<div class="lightbox" id="image-lightbox" aria-hidden="true" role="dialog" aria-label="이미지 확대 보기">
+  <button class="lightbox-x" id="lightbox-x" aria-label="닫기">✕</button>
+  <img id="lightbox-img" alt="확대 이미지">
+</div>
+
 <!-- ============================================================= -->
 <!--  STATIC DATA (연구 분야 카드 — 편집 UI 대상 아님)               -->
 <!-- ============================================================= -->
@@ -911,7 +926,7 @@ let newsCat='전체';
 function renderNewsHome(){
   const latest=DB.news.slice(0,3);
   $('#news-home').innerHTML=latest.map((n,i)=>`
-    <article class="nh"><div class="img">${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
+    <article class="nh"><div class="img${n.img?' zoomable':''}"${n.img?` data-zoom="news:${i}" role="button" tabindex="0" aria-label="이미지 확대 보기"`:''}>${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
       <div class="b"><div class="meta"><span class="cat">${esc(n.cat)}</span><time>${esc(n.date)}</time></div>
         <h4>${esc(n.title)}</h4></div></article>`).join('') || `<div class="empty">// 소식이 없습니다</div>`;
 }
@@ -923,7 +938,7 @@ function renderNews(){
   const rows=DB.news.map((n,idx)=>({n,idx})).filter(({n})=>newsCat==='전체'||n.cat===newsCat);
   $('#news-board').innerHTML=rows.length?rows.map(({n,idx},i)=>`
     <article class="ncard">${actionBtns('news',idx)}
-      <div class="img">${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
+      <div class="img${n.img?' zoomable':''}"${n.img?` data-zoom="news:${idx}" role="button" tabindex="0" aria-label="이미지 확대 보기"`:''}>${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
       <div class="b"><div class="meta"><span class="cat">${esc(n.cat)}</span><time>${esc(n.date)}</time></div>
         <h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></div></article>`).join('') : `<div class="empty">// 해당 분류의 소식이 없습니다</div>`;
   renderNewsHome();
@@ -937,7 +952,7 @@ function renderPeople(){
   const groups=[...present,...extra];
   let html=groups.map(g=>{
     const rows=DB.people.map((p,idx)=>({p,idx})).filter(({p})=>p.group===g).map(({p,idx},i)=>`
-      <article class="pcard">${actionBtns('people',idx)}<div class="ph">${p.photo?`<img src="${esc(p.photo)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`:avatarSVG(i+g.length)}</div>
+      <article class="pcard">${actionBtns('people',idx)}<div class="ph${p.photo?' zoomable':''}"${p.photo?` data-zoom="people:${idx}" role="button" tabindex="0" aria-label="이미지 확대 보기"`:''}>${p.photo?`<img src="${esc(p.photo)}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">`:avatarSVG(i+g.length)}</div>
         <div class="info"><div class="nm">${esc(p.name)}</div><div class="deg">${esc(p.deg)}</div>
           <div class="fo">${esc(p.focus)}</div>${p.now?`<div class="now">→ 현재: ${esc(p.now)}</div>`:''}</div></article>`).join('');
     return `<div class="grp-h">${esc(g)}</div><div class="people-grid">${rows}</div>`;
@@ -974,7 +989,7 @@ function makeBoard(key, boardId, filtersId, searchId){
       return okY&&hay.includes(term);
     }).sort((a,b)=>b.d.year-a.d.year);
     $('#'+boardId).innerHTML=rows.length?rows.map(({d,idx},i)=>`
-      <article class="pub"><div class="thumb">${d.img?`<img src="${esc(d.img)}" alt="" style="width:100%;height:100%;object-fit:cover">`:tileSVG(Object.values(HUES)[i%3], d.year+i)}</div>
+      <article class="pub"><div class="thumb${d.img?' zoomable':''}"${d.img?` data-zoom="${key}:${idx}" role="button" tabindex="0" aria-label="이미지 확대 보기"`:''}>${d.img?`<img src="${esc(d.img)}" alt="" style="width:100%;height:100%;object-fit:cover">`:tileSVG(Object.values(HUES)[i%3], d.year+i)}</div>
         <div><div class="yr">${esc(d.year)}${(d.badges||[]).map(b=>`<span class="badge-pill${String(b).includes('%')?' pct':''}">${esc(b)}</span>`).join('')}</div><h3>${esc(d.title)}</h3><div class="auth">${bold(d.authors)}</div>
           <div class="venue">${esc(d.venue)}</div><div class="ptags">${(d.tags||[]).map(t=>`<span class="pt">${esc(t)}</span>`).join('')}</div></div>
         <div class="links">${(d.links||[]).map(linkData).map(l=>`<a class="plink" href="${esc(l.url)}" target="_blank" rel="noopener">${linkIcon}${esc(l.label)}</a>`).join('')}${actionBtns(key,idx)}</div>
@@ -986,6 +1001,19 @@ function makeBoard(key, boardId, filtersId, searchId){
 }
 const paperBoard=makeBoard('papers','paper-board','paper-filters','paper-search');
 const patentBoard=makeBoard('patents','patent-board','patent-filters','patent-search');
+
+function openImageLightbox(ref){
+  const [type,index]=String(ref||'').split(':'), item=type==='prof'?DB.prof:(DB[type]&&DB[type][Number(index)]);
+  const src=item&&(item.imgOriginal||item.photoOriginal||item.img||item.photo); if(!src)return;
+  $('#lightbox-img').src=src; $('#image-lightbox').classList.add('open'); $('#image-lightbox').setAttribute('aria-hidden','false');
+}
+function closeImageLightbox(){
+  $('#image-lightbox').classList.remove('open'); $('#image-lightbox').setAttribute('aria-hidden','true'); $('#lightbox-img').removeAttribute('src');
+}
+document.addEventListener('click',e=>{const z=e.target.closest('[data-zoom]'); if(z)openImageLightbox(z.dataset.zoom);});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&document.activeElement.matches('[data-zoom]')){e.preventDefault();openImageLightbox(document.activeElement.dataset.zoom);}});
+$('#lightbox-x').addEventListener('click',closeImageLightbox);
+$('#image-lightbox').addEventListener('click',e=>{if(e.target.id==='image-lightbox')closeImageLightbox();});
 
 /* ---- badges + representative-image (green) panels ---- */
 const BADGE_OPTS=['Q1','Q2','Q3','Q4','상위 1%','상위 5%','상위 10%'];
@@ -1020,7 +1048,7 @@ function renderProf(){
         <defs><linearGradient id="pgp" x1="0" y1="0" x2="320" y2="400"><stop stop-color="#0A6E42"/><stop offset="1" stop-color="#0C3325"/></linearGradient></defs></svg>`;
   $('#prof-mount').innerHTML=`
     <div class="prof-card">
-      <div class="prof-photo">${photo}</div>
+      <div class="prof-photo${p.photo?' zoomable':''}"${p.photo?' data-zoom="prof:single" role="button" tabindex="0" aria-label="이미지 확대 보기"':''}>${photo}</div>
       <div class="prof-meta">
         <div class="row"><span class="k">Office</span><span class="v">${esc(p.office)}</span></div>
         <div class="row"><span class="k">Email</span><span class="v"><a href="mailto:${esc(p.email)}" style="color:var(--green)">${esc(p.email)}</a></span></div>
@@ -1102,17 +1130,20 @@ const SCHEMA={
     {k:'education',label:'학력  (한 줄에 하나, **굵게** 가능)',type:'lines'},
     {k:'recognition',label:'주요 활동  (한 줄에 하나)',type:'lines'}]},
 };
-let formCtx={type:null, idx:null, single:false, storeKey:null, img:'', imgKey:null, cropSaved:null};
+let formCtx={type:null, idx:null, single:false, storeKey:null, img:'', imgKey:null, cropSaved:null, originalKey:null, cropKey:null};
 let cropCtx=null;
-const supportsCrop=type=>type==='people'||type==='prof';
+const supportsCrop=type=>['people','prof','papers','patents','news'].includes(type);
+const cropKeys=type=>type==='people'||type==='prof'?{original:'photoOriginal',crop:'photoCrop'}:{original:'imgOriginal',crop:'imgCrop'};
+const cropSize=type=>type==='prof'?{w:640,h:800}:type==='news'?{w:960,h:600}:(type==='papers'||type==='patents'?{w:960,h:760}:{w:800,h:800});
 function openForm(type, idx){
   const sch=SCHEMA[type]; if(!sch)return; const single=!!sch.single; const storeKey=sch.store||type;
   const item=single?(DB[storeKey]||{}):(idx!=null?DB[type][idx]:{});
   const imgField=sch.fields.find(f=>f.type==='image');
   const savedImg=imgField?(item[imgField.k]||''):'';
+  const keys=cropKeys(type), size=cropSize(type);
   formCtx={type, idx, single, storeKey, imgKey:imgField?imgField.k:null,
-    img:supportsCrop(type)?(item.photoOriginal||savedImg):savedImg,
-    cropSaved:supportsCrop(type)?(item.photoCrop||null):null};
+    img:supportsCrop(type)?(item[keys.original]||savedImg):savedImg,
+    cropSaved:supportsCrop(type)?(item[keys.crop]||null):null,originalKey:keys.original,cropKey:keys.crop};
   $('#modal-title').textContent=(single||idx!=null?'수정 · ':'추가 · ')+sch.title;
   $('#modal-fields').innerHTML=sch.fields.map(f=>{
     const v=item[f.k];
@@ -1124,7 +1155,7 @@ function openForm(type, idx){
     if(f.type==='links'){const val=(v||[]).map(l=>`${l.label}|${l.url}`).join('\n');
       return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-links="1" placeholder="URL만 입력하거나, 버튼이름|URL">${esc(val)}</textarea><div class="hint" style="margin-top:5px">예: https://patents.google.com/... 또는 Google Patents|https://patents.google.com/...</div></div>`;}
     if(f.type==='image') return `<div class="field"><label>${esc(f.label)}</label><div class="img-field">
-        ${supportsCrop(type)?`<div class="crop-wrap"><div class="hint" style="margin:0;text-align:center">홈페이지 카드에 표시되는 모습</div><canvas class="crop-canvas" id="cropcanvas" width="${type==='prof'?640:800}" height="800"></canvas>
+        ${supportsCrop(type)?`<div class="crop-wrap${['papers','patents','news'].includes(type)?' pub-crop':''}"><div class="hint" style="margin:0;text-align:center">홈페이지 카드에 표시되는 모습</div><canvas class="crop-canvas" id="cropcanvas" width="${size.w}" height="${size.h}"></canvas>
           <div class="crop-tools"><span>축소</span><input id="cropzoom" type="range" min="1" max="3" step="0.01" value="1"><span>확대</span></div>
           <div class="hint" style="margin:0">사진을 드래그해 표시할 영역을 정하고, 슬라이더로 확대할 수 있습니다.</div></div>`:
           `<div class="img-prev" id="imgprev">${formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기'}</div>`}
@@ -1211,8 +1242,8 @@ function saveForm(){
   });
   if(imgKey) obj[imgKey]=(supportsCrop(type)&&cropCtx)?croppedImage():(formCtx.img||'');
   if(supportsCrop(type)){
-    obj.photoOriginal=formCtx.img||'';
-    obj.photoCrop=cropCtx?{zoom:cropCtx.zoom,x:cropCtx.x,y:cropCtx.y}:null;
+    obj[formCtx.originalKey]=formCtx.img||'';
+    obj[formCtx.cropKey]=cropCtx?{zoom:cropCtx.zoom,x:cropCtx.x,y:cropCtx.y}:null;
   }
   if(single) DB[storeKey]={...DB[storeKey],...obj};
   else if(idx!=null) DB[type][idx]={...DB[type][idx],...obj}; else DB[type].push(obj);
@@ -1236,7 +1267,7 @@ $('#confirm-ok').addEventListener('click',()=>closeConfirm(true));
 $('#confirm-cancel').addEventListener('click',()=>closeConfirm(false));
 $('#confirm-x').addEventListener('click',()=>closeConfirm(false));
 $('#confirm').addEventListener('click',e=>{if(e.target.id==='confirm')closeConfirm(false);});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm(); if($('#confirm').classList.contains('open'))closeConfirm(false);}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeForm(); closeImageLightbox(); if($('#confirm').classList.contains('open'))closeConfirm(false);}});
 
 /* ---- edit mode toggle (password-gated) ---- */
 function setEdit(on){document.body.classList.toggle('editing',on);}
