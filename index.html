@@ -948,6 +948,18 @@ function renderPeople(){
 
 /* ---- board (papers / patents) ---- */
 const linkIcon=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>`;
+function externalUrl(value){
+  const url=String(value||'').trim();
+  if(/^(https?:\/\/|mailto:)/i.test(url))return url;
+  if(/^(www\.|[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/|$))/i.test(url))return 'https://'+url;
+  return '#';
+}
+function linkData(link){
+  let label=String(link&&link.label||'').trim(), url=String(link&&link.url||'').trim();
+  if((!url||url==='#')&&externalUrl(label)!=='#') url=label;
+  url=externalUrl(url);
+  return {label:label||'링크',url};
+}
 function makeBoard(key, boardId, filtersId, searchId){
   let year='all', term='';
   function render(){
@@ -965,7 +977,7 @@ function makeBoard(key, boardId, filtersId, searchId){
       <article class="pub"><div class="thumb">${d.img?`<img src="${esc(d.img)}" alt="" style="width:100%;height:100%;object-fit:cover">`:tileSVG(Object.values(HUES)[i%3], d.year+i)}</div>
         <div><div class="yr">${esc(d.year)}${(d.badges||[]).map(b=>`<span class="badge-pill${String(b).includes('%')?' pct':''}">${esc(b)}</span>`).join('')}</div><h3>${esc(d.title)}</h3><div class="auth">${bold(d.authors)}</div>
           <div class="venue">${esc(d.venue)}</div><div class="ptags">${(d.tags||[]).map(t=>`<span class="pt">${esc(t)}</span>`).join('')}</div></div>
-        <div class="links">${(d.links||[]).map(l=>`<a class="plink" href="${esc(l.url)}" target="_blank" rel="noopener">${linkIcon}${esc(l.label)}</a>`).join('')}${actionBtns(key,idx)}</div>
+        <div class="links">${(d.links||[]).map(linkData).map(l=>`<a class="plink" href="${esc(l.url)}" target="_blank" rel="noopener">${linkIcon}${esc(l.label)}</a>`).join('')}${actionBtns(key,idx)}</div>
       </article>`).join('') : `<div class="empty">// 항목이 없습니다</div>`;
   }
   $('#'+filtersId).addEventListener('click',e=>{const b=e.target.closest('.fchip'); if(!b)return; year=b.dataset.y; render();});
@@ -1060,13 +1072,13 @@ const SCHEMA={
     {k:'badges',label:'등급 배지  (연도 옆에 표기됩니다)',type:'checks',opts:BADGE_OPTS},
     {k:'img',label:'대표 이미지  (목록 왼쪽 패널)',type:'image'},
     {k:'tags',label:'태그  (쉼표로 구분)',type:'tags'},
-    {k:'links',label:'링크  (한 줄에 하나: 라벨|URL)',type:'links'}]},
+    {k:'links',label:'링크  (한 줄에 하나: URL 또는 라벨|URL)',type:'links'}]},
   patents:{title:'특허', fields:[
     {k:'year',label:'연도',type:'number'},{k:'title',label:'명칭',type:'text'},
     {k:'authors',label:'발명자  (연구실 발명자는 **이름**)',type:'text'},
     {k:'venue',label:'상태 / 번호  (예: 등록 · 제10-XXXXXXX호)',type:'text'},
     {k:'img',label:'대표 이미지  (목록 왼쪽 패널)',type:'image'},
-    {k:'tags',label:'태그  (쉼표로 구분)',type:'tags'},{k:'links',label:'링크  (라벨|URL)',type:'links'}]},
+    {k:'tags',label:'태그  (쉼표로 구분)',type:'tags'},{k:'links',label:'링크  (URL 또는 라벨|URL)',type:'links'}]},
   people:{title:'구성원', fields:[
     {k:'group',label:'구분',type:'select',opts:GROUP_ORDER},
     {k:'name',label:'이름',type:'text'},{k:'deg',label:'학위 / 직함  (예: Ph.D. Student, M.S. 2024)',type:'text'},
@@ -1110,7 +1122,7 @@ function openForm(type, idx){
     if(f.type==='checks') return `<div class="field"><label>${esc(f.label)}</label><div class="checkrow">${f.opts.map(o=>`<label class="checkopt"><input type="checkbox" data-k="${f.k}" data-multi="1" value="${esc(o)}"${(v||[]).includes(o)?' checked':''}>${esc(o)}</label>`).join('')}</div></div>`;
     if(f.type==='tags') return `<div class="field"><label>${esc(f.label)}</label><input type="text" data-k="${f.k}" data-tags="1" value="${esc((v||[]).join(', '))}"></div>`;
     if(f.type==='links'){const val=(v||[]).map(l=>`${l.label}|${l.url}`).join('\n');
-      return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-links="1" placeholder="PDF|https://...">${esc(val)}</textarea></div>`;}
+      return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-links="1" placeholder="URL만 입력하거나, 버튼이름|URL">${esc(val)}</textarea><div class="hint" style="margin-top:5px">예: https://patents.google.com/... 또는 Google Patents|https://patents.google.com/...</div></div>`;}
     if(f.type==='image') return `<div class="field"><label>${esc(f.label)}</label><div class="img-field">
         ${supportsCrop(type)?`<div class="crop-wrap"><div class="hint" style="margin:0;text-align:center">홈페이지 카드에 표시되는 모습</div><canvas class="crop-canvas" id="cropcanvas" width="${type==='prof'?640:800}" height="800"></canvas>
           <div class="crop-tools"><span>축소</span><input id="cropzoom" type="range" min="1" max="3" step="0.01" value="1"><span>확대</span></div>
@@ -1190,7 +1202,10 @@ function saveForm(){
     let val=el.value;
     if(el.dataset.tags) val=val.split(',').map(s=>s.trim()).filter(Boolean);
     else if(el.dataset.lines) val=val.split('\n').map(s=>s.trim()).filter(Boolean);
-    else if(el.dataset.links) val=val.split('\n').map(s=>s.trim()).filter(Boolean).map(line=>{const[label,...u]=line.split('|'); return {label:(label||'').trim(), url:(u.join('|')||'#').trim()};});
+    else if(el.dataset.links) val=val.split('\n').map(s=>s.trim()).filter(Boolean).map(line=>{
+      if(!line.includes('|'))return {label:'링크',url:line};
+      const[label,...u]=line.split('|'); return {label:(label||'링크').trim(),url:(u.join('|')||'#').trim()};
+    });
     else if(el.type==='number') val=Number(val)||new Date().getFullYear();
     obj[k]=val;
   });
