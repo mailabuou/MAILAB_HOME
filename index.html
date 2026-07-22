@@ -819,6 +819,17 @@ const PROF = {
 const ADMIN_HASH = "aacb62027970036147bb8fabc16aef284e50604f9b49a5c4fda661897b14f4eb";
 </script>
 
+<!-- Google Drive 동기화 설정: README의 설정 절차를 완료한 뒤 값을 입력하세요. -->
+<script id="drive-config">
+const DRIVE_CONFIG = {
+  clientId: "183900319479-7g5u1qml334t5q8ob3okodiabuje7i6o.apps.googleusercontent.com",
+  apiKey: "AIzaSyAxrM0K_5CfJypziF6XlgWUU5gszLgIHYM",
+  dataFileId: "",
+  adminEmail: "mailab.uou@gmail.com"
+};
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <!-- ============================================================= -->
 <!--  APP LOGIC                                                     -->
 <!-- ============================================================= -->
@@ -850,10 +861,73 @@ function closeConfirm(v){document.getElementById('confirm').classList.remove('op
 /* ---- DB ---- */
 const DEFAULTS={news:NEWS, people:PEOPLE, papers:PAPERS, patents:PATENTS, prof:PROF};
 let DB=clone(DEFAULTS);
-try{const s=localStorage.getItem('mailab_db'); if(s){const p=JSON.parse(s); if(p&&p.papers&&p.people&&p.news&&p.patents)DB=p;}}catch(e){}
+const driveBaseConfigured=()=>!!(DRIVE_CONFIG.clientId&&DRIVE_CONFIG.apiKey&&DRIVE_CONFIG.adminEmail);
+const driveConfigured=()=>driveBaseConfigured()&&!!DRIVE_CONFIG.dataFileId;
+if(!driveConfigured()){try{const s=localStorage.getItem('mailab_db'); if(s){const p=JSON.parse(s); if(p&&p.papers&&p.people&&p.news&&p.patents)DB=p;}}catch(e){}}
 ['news','people','papers','patents'].forEach(k=>{if(!Array.isArray(DB[k]))DB[k]=clone(DEFAULTS[k]);});
 if(!DB.prof||typeof DB.prof!=='object')DB.prof=clone(DEFAULTS.prof);
-function saveDB(){
+let driveRevision=0, driveToken='', driveTokenExpires=0, driveTokenClient=null, driveSyncing=false;
+function validDB(data){return !!(data&&Array.isArray(data.news)&&Array.isArray(data.people)&&Array.isArray(data.papers)&&Array.isArray(data.patents)&&data.prof);}
+function applyDB(data){
+  if(!validDB(data))throw new Error('Drive 데이터 형식이 올바르지 않습니다.');
+  DB=clone(data); renderAll();
+}
+async function driveRequestToken(){
+  if(driveToken&&Date.now()<driveTokenExpires-60000)return driveToken;
+  if(!driveBaseConfigured())throw new Error('Google Drive 설정이 완료되지 않았습니다.');
+  const started=Date.now(); while(!(window.google&&google.accounts&&google.accounts.oauth2)){
+    if(Date.now()-started>10000)throw new Error('Google 로그인 모듈을 불러오지 못했습니다.');
+    await new Promise(r=>setTimeout(r,100));
+  }
+  return new Promise((resolve,reject)=>{
+    driveTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:DRIVE_CONFIG.clientId,
+      scope:'openid email https://www.googleapis.com/auth/drive.file',
+      callback:async response=>{
+        if(response.error){reject(new Error(response.error));return;}
+        try{
+          const profile=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+response.access_token}}).then(r=>{if(!r.ok)throw new Error('Google 계정 정보를 확인하지 못했습니다.');return r.json();});
+          if(String(profile.email||'').toLowerCase()!==String(DRIVE_CONFIG.adminEmail).toLowerCase())throw new Error('허용된 관리자 Google 계정이 아닙니다.');
+          driveToken=response.access_token; driveTokenExpires=Date.now()+(Number(response.expires_in)||3500)*1000; resolve(driveToken);
+        }catch(err){reject(err);}
+      }
+    });
+    driveTokenClient.requestAccessToken({prompt:'select_account'});
+  });
+}
+async function fetchDrivePayload(auth=false){
+  const headers={}; if(auth)headers.Authorization='Bearer '+await driveRequestToken();
+  const key=DRIVE_CONFIG.apiKey?'&key='+encodeURIComponent(DRIVE_CONFIG.apiKey):'';
+  const url='https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(DRIVE_CONFIG.dataFileId)+'?alt=media'+key;
+  headers['Cache-Control']='no-cache';
+  const res=await fetch(url,{headers,cache:'no-store'}); if(!res.ok)throw new Error('Drive 데이터를 불러오지 못했습니다. ('+res.status+')');
+  const payload=await res.json(); if(!payload||!validDB(payload.data))throw new Error('Drive 데이터 파일 형식이 올바르지 않습니다.');
+  return payload;
+}
+async function loadDriveDB(quiet=false){
+  if(!driveConfigured())return false;
+  try{
+    const payload=await fetchDrivePayload(false); driveRevision=Number(payload.revision)||0; applyDB(payload.data);
+    if(!quiet)toast('Google Drive의 최신 홈페이지 데이터를 불러왔습니다.'); return true;
+  }catch(err){console.error(err); if(!quiet)toast(err.message+' 내장 데이터를 표시합니다.'); return false;}
+}
+async function saveDriveDB(){
+  if(driveSyncing){toast('Google Drive 저장이 진행 중입니다.');return false;}
+  driveSyncing=true;
+  try{
+    const latest=await fetchDrivePayload(true), latestRevision=Number(latest.revision)||0;
+    if(latestRevision!==driveRevision){driveRevision=latestRevision;applyDB(latest.data);toast('다른 관리자가 먼저 저장했습니다. 최신 내용을 불러왔으니 수정 내용을 다시 확인해 주세요.');return false;}
+    const payload={schemaVersion:1,revision:driveRevision+1,updatedAt:new Date().toISOString(),data:DB};
+    const token=await driveRequestToken();
+    const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(DRIVE_CONFIG.dataFileId)+'?uploadType=media',{
+      method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json;charset=utf-8'},body:JSON.stringify(payload)
+    });
+    if(!res.ok)throw new Error('Google Drive 저장에 실패했습니다. ('+res.status+')');
+    driveRevision=payload.revision; toast('Google Drive에 저장했습니다. 모든 방문자에게 반영됩니다.'); return true;
+  }catch(err){console.error(err);toast(err.message);return false;}finally{driveSyncing=false;}
+}
+async function saveDB(){
+  if(driveConfigured())return saveDriveDB();
   try{
     localStorage.setItem('mailab_db',JSON.stringify(DB));
     return true;
@@ -892,6 +966,7 @@ const hashPw=pw=>sha256(unescape(encodeURIComponent(String(pw))));
 let adminHash=(typeof ADMIN_HASH!=='undefined')?ADMIN_HASH:'';
 try{const h=localStorage.getItem('mailab_hash'); if(h)adminHash=h;}catch(e){}
 let authed=false; try{authed=sessionStorage.getItem('mailab_authed')==='1';}catch(e){}
+if(driveBaseConfigured())authed=false;
 let counted=false;
 
 /* ---- palette-aware tile visuals ---- */
@@ -1094,6 +1169,7 @@ function renderAll(){
   applyStats();
 }
 renderAll();
+if(driveConfigured())loadDriveDB();
 
 /* ---- edit forms ---- */
 const SCHEMA={
@@ -1236,7 +1312,7 @@ function resizeImage(file){
     rd.readAsDataURL(file);
   });
 }
-function saveForm(){
+async function saveForm(){
   const {type,idx,single,storeKey,imgKey}=formCtx; const obj={};
   $$('#modal-fields [data-k]').forEach(el=>{
     const k=el.dataset.k;
@@ -1258,8 +1334,9 @@ function saveForm(){
   }
   if(single) DB[storeKey]={...DB[storeKey],...obj};
   else if(idx!=null) DB[type][idx]={...DB[type][idx],...obj}; else DB[type].push(obj);
-  const stored=saveDB(); renderAll(); closeForm();
-  if(stored) toast('수정 내용이 이 브라우저에 임시 저장되었습니다. 공개 홈페이지 반영은 “사이트 파일로 저장” 후 서버에 재업로드해야 합니다.');
+  renderAll();
+  const stored=await saveDB();
+  if(stored){closeForm(); if(!driveConfigured())toast('수정 내용이 이 브라우저에 임시 저장되었습니다. 공개 홈페이지 반영은 “사이트 파일로 저장” 후 서버에 재업로드해야 합니다.');}
 }
 
 /* ---- global edit clicks ---- */
@@ -1267,7 +1344,7 @@ document.addEventListener('click',e=>{
   const add=e.target.closest('[data-add]'); if(add){openForm(add.dataset.add,null); return;}
   const ed=e.target.closest('[data-edit]'); if(ed){const p=ed.dataset.edit.split(':'); openForm(p[0], p[1]==='single'?null:+p[1]); return;}
   const del=e.target.closest('[data-del]'); if(del){const p=del.dataset.del.split(':');
-    askConfirm('이 항목을 삭제하시겠습니까?','삭제').then(ok=>{ if(ok){DB[p[0]].splice(+p[1],1); saveDB(); renderAll(); toast('삭제되었습니다.');} }); return;}
+    askConfirm('이 항목을 삭제하시겠습니까?','삭제').then(async ok=>{ if(ok){DB[p[0]].splice(+p[1],1); renderAll(); const saved=await saveDB(); if(saved&&!driveConfigured())toast('삭제되었습니다.');} }); return;}
   const nc=e.target.closest('[data-nc]'); if(nc){newsCat=nc.dataset.nc; renderNews(); return;}
 });
 $('#modal-x').addEventListener('click',closeForm);
@@ -1314,6 +1391,29 @@ function submitAuth(){
     toast('비밀번호가 변경되었습니다. "사이트 파일로 저장" 후 재업로드해야 공개본에 적용됩니다.');
   }
 }
+async function createInitialDriveFile(){
+  const token=await driveRequestToken(), boundary='mailab_'+Date.now();
+  const payload={schemaVersion:1,revision:1,updatedAt:new Date().toISOString(),data:DB};
+  const metadata={name:'mailab-site-data.json',mimeType:'application/json',description:'MAILAB homepage public content data'};
+  const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(payload)+'\r\n--'+boundary+'--';
+  const created=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});
+  if(!created.ok)throw new Error('Drive 데이터 파일을 만들지 못했습니다. ('+created.status+')');
+  const {id}=await created.json();
+  const shared=await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'/permissions',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({type:'anyone',role:'reader'})});
+  if(!shared.ok)throw new Error('Drive 데이터 파일의 공개 읽기 권한을 설정하지 못했습니다. ('+shared.status+')');
+  DRIVE_CONFIG.dataFileId=id; driveRevision=1;
+  try{await navigator.clipboard.writeText(id);}catch(e){}
+  console.info('MAILAB Google Drive dataFileId:',id);
+  toast('Drive 데이터 파일을 만들고 ID를 클립보드에 복사했습니다. README 안내에 따라 drive-config에 붙여넣고 한 번만 배포하세요.');
+  return id;
+}
+async function driveAdminLogin(){
+  try{
+    await driveRequestToken();
+    if(!DRIVE_CONFIG.dataFileId)await createInitialDriveFile();
+    authed=true; setEdit(true); $('#ab-pw').style.display='none'; $('#ab-export').textContent='백업 파일 저장';
+  }catch(err){console.error(err);toast(err.message);}
+}
 $('#auth-go').addEventListener('click',submitAuth);
 $('#auth-x').addEventListener('click',closeAuth);
 $('#auth-cancel').addEventListener('click',closeAuth);
@@ -1321,18 +1421,20 @@ $('#auth').addEventListener('click',e=>{if(e.target.id==='auth')closeAuth();});
 $('#auth-pw1').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth();});
 $('#auth-pw2').addEventListener('keydown',e=>{if(e.key==='Enter')submitAuth();});
 
-$('#fab').addEventListener('click',()=>{ if(authed)setEdit(true); else openAuth('login'); });
+$('#fab').addEventListener('click',()=>{ if(authed)setEdit(true); else if(driveBaseConfigured())driveAdminLogin(); else openAuth('login'); });
 $('#ab-done').addEventListener('click',()=>setEdit(false));
 $('#ab-logout').addEventListener('click',()=>{
+  if(driveToken&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(driveToken,()=>{});
+  driveToken=''; driveTokenExpires=0;
   authed=false; try{sessionStorage.removeItem('mailab_authed');}catch(e){}
   setEdit(false); toast('로그아웃되었습니다.');
 });
-$('#ab-pw').addEventListener('click',()=>openAuth('change'));
+$('#ab-pw').addEventListener('click',()=>{if(!driveBaseConfigured())openAuth('change');});
 $('#ab-reset').addEventListener('click',()=>{
-  askConfirm('모든 편집 내용을 파일 기본값으로 되돌립니다. 계속할까요?','되돌리기',false).then(ok=>{ if(!ok)return;
+  askConfirm('모든 편집 내용을 파일 기본값으로 되돌립니다. 계속할까요?','되돌리기',false).then(async ok=>{ if(!ok)return;
     try{localStorage.removeItem('mailab_db');}catch(e){} DB=clone(DEFAULTS);
     ['news','people','papers','patents'].forEach(k=>{if(!Array.isArray(DB[k]))DB[k]=clone(DEFAULTS[k]);});
-    if(!DB.prof)DB.prof=clone(DEFAULTS.prof); renderAll(); toast('기본값으로 되돌렸습니다.');
+    if(!DB.prof)DB.prof=clone(DEFAULTS.prof); renderAll(); const saved=await saveDB(); if(saved&&!driveConfigured())toast('기본값으로 되돌렸습니다.');
   });
 });
 
