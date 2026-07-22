@@ -75,44 +75,138 @@ python -m http.server 8000
 
 Google Drive에는 이미지 Data URL을 포함한 전체 홈페이지 데이터가 `mailab-site-data.json` 한 파일로 저장됩니다. 파일은 공개 읽기 전용으로 공유되고, 쓰기는 지정한 Google 계정의 OAuth 인증을 거친 관리자에게만 허용됩니다.
 
-### 1. Google Cloud 프로젝트 준비
+> [!CAUTION]
+> Google Cloud 상단의 **Start your Free Trial**은 누르지 마세요. 무료 체험, 카드 등록, 결제 프로필과 본인인증은 이 홈페이지 설정에 필요하지 않습니다.
 
-1. 공용 관리자 계정으로 [Google Cloud Console](https://console.cloud.google.com/)에 접속합니다.
-2. 새 프로젝트를 만들고 **Google Drive API**를 활성화합니다.
-3. **Google Auth Platform → Branding / Audience**에서 OAuth 동의 화면을 설정합니다.
-4. 앱이 테스트 상태라면 공용 관리자 이메일을 테스트 사용자로 추가합니다.
-5. **Clients**에서 `Web application` 유형의 OAuth Client ID를 만듭니다.
-6. 승인된 JavaScript 원본에 다음 주소를 추가합니다.
+### 1단계: 결제 없이 Cloud 프로젝트 만들기
+
+1. 공용 관리자 계정으로 <https://console.cloud.google.com/projectcreate>에 접속합니다.
+2. 프로젝트 이름을 `MAILAB Homepage`로 입력하고 **Create**를 누릅니다.
+3. 화면 상단 프로젝트 선택기가 `MAILAB Homepage`인지 확인합니다.
+
+### 2단계: Google Drive API 활성화
+
+1. 왼쪽 `☰` → **APIs & Services → Library**로 이동합니다.
+2. `Google Drive API`를 검색합니다.
+3. **Enable**을 누릅니다. 버튼이 **Manage**라면 이미 활성화된 상태입니다.
+4. **APIs & Services → Enabled APIs & services** 목록에 `Google Drive API`가 있는지 확인합니다.
+
+API Key에 Drive 제한을 거는 것과 Drive API를 활성화하는 것은 별개이므로 이 단계를 생략하면 안 됩니다.
+
+### 3단계: OAuth 동의 화면과 테스트 사용자 설정
+
+1. **Google Auth Platform → Branding**에서 앱 이름을 `MAILAB Homepage`로 설정하고 연락처 이메일을 입력합니다.
+2. **Audience**의 User type이 `External`, Publishing status가 `Testing`인지 확인합니다.
+3. **Test users → Add users**를 눌러 실제 관리에 사용할 공용 Google 계정을 추가합니다.
+4. **Data Access → Add or remove scopes**에서 다음 권한을 검색해 추가하고 저장합니다.
+
+```text
+https://www.googleapis.com/auth/drive.file
+```
+
+전체 Drive 권한인 `https://www.googleapis.com/auth/drive`는 선택하지 않습니다. `drive.file`은 이 홈페이지 앱이 생성한 파일만 관리합니다.
+
+### 4단계: OAuth Client ID 만들기
+
+1. **Google Auth Platform → Clients → Create client**로 이동합니다.
+2. Application type은 **Web application**을 선택합니다.
+3. 이름은 `MAILAB Homepage Web`으로 입력합니다.
+4. **Authorized JavaScript origins**에 아래 두 주소를 각각 추가합니다.
 
 ```text
 https://mailabuou.github.io
 http://localhost:8000
 ```
 
-7. API Key를 만들고 가능하면 HTTP referrer를 위 주소로, API 사용 범위를 Google Drive API로 제한합니다.
+5. **Authorized redirect URIs**는 비워둡니다.
+6. **Create**를 누르고 `...apps.googleusercontent.com`으로 끝나는 Client ID를 복사합니다.
+7. Client Secret은 이 홈페이지에서 사용하지 않습니다.
 
-### 2. HTML 설정값 입력
+### 5단계: 브라우저용 API Key 만들기
 
-`index.html`의 `drive-config` 블록에 Client ID, API Key와 관리자 이메일을 입력합니다. 첫 설정에서는 `dataFileId`를 비워 둡니다.
+1. **APIs & Services → Credentials → Create credentials → API key**로 이동합니다.
+2. Name은 `MAILAB Homepage API Key`로 입력합니다.
+3. **Select API restrictions**에서 `Google Drive API`를 선택합니다.
+4. **Authenticate API calls through a service account**는 체크하지 않습니다.
+5. **Application restrictions**에서 `Websites`를 선택합니다.
+6. Website restrictions에 아래 두 주소를 각각 추가합니다.
+
+```text
+https://mailabuou.github.io/*
+http://localhost:8000/*
+```
+
+7. **Create**를 누르고 `AIza...`로 시작하는 API Key를 복사합니다.
+
+### 6단계: 첫 번째 설정 배포
+
+`index.html`의 `drive-config` 블록에 Client ID, API Key와 공용 관리자 이메일을 입력합니다. `dataFileId`는 아직 비워둡니다.
 
 ```js
 const DRIVE_CONFIG = {
   clientId: "123456789-....apps.googleusercontent.com",
   apiKey: "AIza...",
   dataFileId: "",
-  adminEmail: "shared-admin@example.com"
+  adminEmail: "mailab.uou@gmail.com"
 };
 ```
 
-이 변경을 `main`에 배포한 뒤 홈페이지에서 **관리 모드**를 누르고 공용 계정으로 인증합니다. 홈페이지가 최초 `mailab-site-data.json` 파일을 만들고 공개 읽기 권한을 설정한 뒤 파일 ID를 클립보드에 복사합니다.
+이 변경을 커밋하고 `main`에 병합하여 GitHub Pages에 배포합니다.
 
-복사된 ID를 `dataFileId`에 넣고 한 번 더 배포합니다.
+### 7단계: 최초 Drive 데이터 파일 생성
 
-```js
-dataFileId: "1AbCdEf..."
+1. 배포된 홈페이지에서 **관리 모드**를 누릅니다.
+2. 반드시 Test users에 등록한 공용 관리자 계정을 선택합니다.
+3. `Google hasn't verified this app` 화면이 나타나면 직접 만든 테스트 앱이므로 **Continue**를 누릅니다.
+4. 다음 Drive 권한이 표시되는지 확인하고 허용합니다.
+
+```text
+See, edit, create, and delete only the specific Google Drive files you use with this app
 ```
 
-이 두 번째 배포 이후에는 콘텐츠를 수정할 때 GitHub 커밋이 필요하지 않습니다.
+5. 성공하면 Drive에 `mailab-site-data.json`이 생성되고 파일 ID가 클립보드에 복사됩니다.
+
+클립보드를 놓쳤다면 Google Drive에서 `mailab-site-data.json`을 검색하고 **링크 복사**를 누릅니다. 다음 주소에서 `/d/`와 `/view` 사이 문자열이 파일 ID입니다.
+
+```text
+https://drive.google.com/file/d/1AbCdEfGhIjKlMn/view
+                                ^^^^^^^^^^^^^^^
+```
+
+### 8단계: dataFileId 입력 후 마지막 배포
+
+복사한 ID만 `dataFileId`에 입력합니다. Drive 링크 전체를 넣으면 안 됩니다.
+
+```js
+dataFileId: "1AbCdEfGhIjKlMn"
+```
+
+이 설정을 커밋하고 다시 `main`에 배포합니다. 이 두 번째 배포 이후에는 콘텐츠 수정 때 GitHub 커밋이 필요하지 않습니다.
+
+### 최초 인증에서 403 insufficientPermissions가 발생할 때
+
+Cloud 설정이 맞더라도 `drive.file`을 추가하기 전에 발급된 예전 액세스 토큰이 남아 있으면 다음 오류가 발생할 수 있습니다.
+
+```text
+403 · insufficientPermissions
+ACCESS_TOKEN_SCOPE_INSUFFICIENT
+```
+
+다음 순서로 기존 권한을 지우고 다시 인증합니다.
+
+1. 공용 관리자 계정으로 <https://myaccount.google.com/connections>에 접속합니다.
+2. `MAILAB Homepage` 연결을 찾아 **모든 연결 삭제** 또는 **액세스 권한 삭제**를 누릅니다.
+3. 홈페이지로 돌아와 `Ctrl + Shift + R`로 강력 새로고침합니다.
+4. **관리 모드**를 다시 누르고 Drive 권한 동의를 새로 진행합니다.
+
+그래도 실패하면 Chrome 개발자도구 `F12 → Network`에서 `files?uploadType=multipart...` 요청의 **Response**를 확인합니다. Response JSON의 `reason`과 `message`만 공유하고, Authorization 헤더나 액세스 토큰은 공유하지 마세요.
+
+| 오류 reason | 의미 | 조치 |
+| --- | --- | --- |
+| `accessNotConfigured` | Drive API 미활성화 | Library에서 Google Drive API Enable |
+| `insufficientPermissions` | 토큰에 `drive.file` 없음 | Google 계정 앱 연결 삭제 후 재동의 |
+| `storageQuotaExceeded` | Drive 저장 공간 부족 | 공용 계정의 Drive/Gmail/Photos 용량 정리 |
+| `origin_mismatch` | GitHub Pages 주소 미등록 | OAuth Client의 Authorized JavaScript origins 확인 |
 
 ### 동시 편집 보호
 
@@ -138,7 +232,7 @@ Drive 데이터에는 증가하는 `revision` 값이 포함됩니다. 저장 직
 
 운영 환경에서는 관리자 모드에서 편집한 데이터가 Google Drive의 `mailab-site-data.json`에 저장됩니다. Drive 설정이 없는 개발·예비 환경에서만 `localStorage`의 `mailab_db`를 사용합니다. **백업 파일 저장** 기능으로 현재 데이터를 포함한 `index.html`을 내려받을 수도 있습니다.
 
-업로드 이미지는 Data URL로 HTML 내부에 저장됩니다. 이미지가 많거나 용량이 크면 브라우저 저장 한도를 초과할 수 있으므로 업로드 과정에서 자동 리사이즈와 JPEG 압축을 수행합니다.
+업로드 이미지는 자동 리사이즈와 JPEG 압축을 거친 Data URL로 변환되어 Drive의 JSON 데이터에 함께 저장됩니다. 별도의 이미지 서버는 사용하지 않으며, 원본과 크롭 상태도 같은 데이터 파일에서 관리합니다. Drive 미설정 예비 모드에서는 브라우저 저장 한도가 적용될 수 있습니다.
 
 ## 프로젝트 구조
 
