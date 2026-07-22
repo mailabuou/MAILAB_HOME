@@ -824,7 +824,7 @@ const ADMIN_HASH = "aacb62027970036147bb8fabc16aef284e50604f9b49a5c4fda661897b14
 const DRIVE_CONFIG = {
   clientId: "183900319479-7g5u1qml334t5q8ob3okodiabuje7i6o.apps.googleusercontent.com",
   apiKey: "AIzaSyAxrM0K_5CfJypziF6XlgWUU5gszLgIHYM",
-  dataFileId: "",
+  dataFileId: "1IKh9SzhFFKszBCdEunIhYSKy07Xa1zt0",
   adminEmail: "mailab.uou@gmail.com"
 };
 </script>
@@ -868,6 +868,11 @@ if(!driveConfigured()){try{const s=localStorage.getItem('mailab_db'); if(s){cons
 if(!DB.prof||typeof DB.prof!=='object')DB.prof=clone(DEFAULTS.prof);
 let driveRevision=0, driveToken='', driveTokenExpires=0, driveTokenClient=null, driveSyncing=false;
 function validDB(data){return !!(data&&Array.isArray(data.news)&&Array.isArray(data.people)&&Array.isArray(data.papers)&&Array.isArray(data.patents)&&data.prof);}
+async function driveApiError(response,fallback){
+  let message='',reason='';
+  try{const body=await response.json();message=body&&body.error&&body.error.message||'';reason=body&&body.error&&body.error.errors&&body.error.errors[0]&&body.error.errors[0].reason||'';}catch(e){}
+  return new Error(`${fallback} (${response.status}${reason?' · '+reason:''})${message?' '+message:''}`);
+}
 function applyDB(data){
   if(!validDB(data))throw new Error('Drive 데이터 형식이 올바르지 않습니다.');
   DB=clone(data); renderAll();
@@ -892,7 +897,7 @@ async function driveRequestToken(){
         }catch(err){reject(err);}
       }
     });
-    driveTokenClient.requestAccessToken({prompt:'select_account'});
+    driveTokenClient.requestAccessToken({prompt:DRIVE_CONFIG.dataFileId?'select_account':'consent'});
   });
 }
 async function fetchDrivePayload(auth=false){
@@ -900,7 +905,7 @@ async function fetchDrivePayload(auth=false){
   const key=DRIVE_CONFIG.apiKey?'&key='+encodeURIComponent(DRIVE_CONFIG.apiKey):'';
   const url='https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(DRIVE_CONFIG.dataFileId)+'?alt=media'+key;
   headers['Cache-Control']='no-cache';
-  const res=await fetch(url,{headers,cache:'no-store'}); if(!res.ok)throw new Error('Drive 데이터를 불러오지 못했습니다. ('+res.status+')');
+  const res=await fetch(url,{headers,cache:'no-store'}); if(!res.ok)throw await driveApiError(res,'Drive 데이터를 불러오지 못했습니다.');
   const payload=await res.json(); if(!payload||!validDB(payload.data))throw new Error('Drive 데이터 파일 형식이 올바르지 않습니다.');
   return payload;
 }
@@ -922,7 +927,7 @@ async function saveDriveDB(){
     const res=await fetch('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(DRIVE_CONFIG.dataFileId)+'?uploadType=media',{
       method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json;charset=utf-8'},body:JSON.stringify(payload)
     });
-    if(!res.ok)throw new Error('Google Drive 저장에 실패했습니다. ('+res.status+')');
+    if(!res.ok)throw await driveApiError(res,'Google Drive 저장에 실패했습니다.');
     driveRevision=payload.revision; toast('Google Drive에 저장했습니다. 모든 방문자에게 반영됩니다.'); return true;
   }catch(err){console.error(err);toast(err.message);return false;}finally{driveSyncing=false;}
 }
@@ -1397,10 +1402,10 @@ async function createInitialDriveFile(){
   const metadata={name:'mailab-site-data.json',mimeType:'application/json',description:'MAILAB homepage public content data'};
   const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(payload)+'\r\n--'+boundary+'--';
   const created=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});
-  if(!created.ok)throw new Error('Drive 데이터 파일을 만들지 못했습니다. ('+created.status+')');
+  if(!created.ok)throw await driveApiError(created,'Drive 데이터 파일을 만들지 못했습니다.');
   const {id}=await created.json();
   const shared=await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'/permissions',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({type:'anyone',role:'reader'})});
-  if(!shared.ok)throw new Error('Drive 데이터 파일의 공개 읽기 권한을 설정하지 못했습니다. ('+shared.status+')');
+  if(!shared.ok)throw await driveApiError(shared,'Drive 데이터 파일의 공개 읽기 권한을 설정하지 못했습니다.');
   DRIVE_CONFIG.dataFileId=id; driveRevision=1;
   try{await navigator.clipboard.writeText(id);}catch(e){}
   console.info('MAILAB Google Drive dataFileId:',id);
