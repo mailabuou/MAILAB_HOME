@@ -1154,12 +1154,16 @@ function itemGallery(item){
   const display=item.img||item.photo||original;
   return original?[{original,display}]:[];
 }
-function showLightboxImage(index){
+function focusLightboxNavigation(){
+  $('#image-lightbox').focus({preventScroll:true});
+}
+function showLightboxImage(index,reclaimFocus=false){
   if(!lightboxImages.length)return;
   lightboxIndex=(index+lightboxImages.length)%lightboxImages.length;
   const current=lightboxImages[lightboxIndex];
   const video=isYoutubeMedia(current), img=$('#lightbox-img'), player=$('#lightbox-video');
   if(video){
+    if(reclaimFocus)player.addEventListener('load',focusLightboxNavigation,{once:true});
     img.hidden=true; img.removeAttribute('src'); player.hidden=false;
     player.src=`https://www.youtube-nocookie.com/embed/${current.videoId}?rel=0`;
   }else{
@@ -1198,13 +1202,15 @@ document.addEventListener('keydown',e=>{
 $('#lightbox-x').addEventListener('click',closeImageLightbox);
 $('#lightbox-prev').addEventListener('click',()=>showLightboxImage(lightboxIndex-1));
 $('#lightbox-next').addEventListener('click',()=>showLightboxImage(lightboxIndex+1));
-$('#lightbox-thumbs').addEventListener('pointerdown',e=>{if(e.target.closest('[data-lightbox-index]'))e.preventDefault();});
+$('#lightbox-thumbs').addEventListener('pointerdown',e=>{
+  if(e.target.closest('[data-lightbox-index]')){e.preventDefault(); focusLightboxNavigation();}
+});
 $('#lightbox-thumbs').addEventListener('click',e=>{
   const b=e.target.closest('[data-lightbox-index]');
   if(b){
-    showLightboxImage(Number(b.dataset.lightboxIndex));
+    showLightboxImage(Number(b.dataset.lightboxIndex),true);
     b.blur();
-    $('#image-lightbox').focus({preventScroll:true});
+    focusLightboxNavigation();
   }
 });
 $('#image-lightbox').addEventListener('wheel',e=>{
