@@ -378,15 +378,16 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
 .gallery-actions button{padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text-2); cursor:pointer}
 .lightbox{position:fixed; inset:0; z-index:120; display:none; place-items:center; padding:28px; background:rgba(3,25,17,.88)}
 .lightbox.open{display:grid}
-.lightbox-stage{display:grid; grid-template-rows:minmax(0,1fr) auto; gap:14px; width:min(1200px,92vw); height:min(900px,88vh)}
-.lightbox-main{position:relative; display:grid; place-items:center; min-height:0}
+.lightbox-stage{position:relative; width:min(1200px,92vw); height:min(900px,88vh)}
+.lightbox-main{position:absolute; inset:0; display:grid; place-items:center; min-height:0}
 .lightbox-main>img{max-width:100%; max-height:100%; object-fit:contain; border-radius:10px; background:#fff; box-shadow:var(--shadow-lg)}
 .lightbox-x{position:absolute; top:22px; right:24px; width:44px; height:44px; border:1px solid rgba(255,255,255,.45); border-radius:50%;
   background:rgba(0,0,0,.25); color:#fff; font-size:1.35rem; cursor:pointer}
 .lightbox-nav{position:absolute; top:50%; transform:translateY(-50%); width:48px; height:64px; border:1px solid rgba(255,255,255,.45); border-radius:12px; background:rgba(0,0,0,.38); color:#fff; font-size:2rem; cursor:pointer}
 .lightbox-nav.prev{left:12px}.lightbox-nav.next{right:12px}
 .lightbox-nav[hidden],.lightbox-thumbs[hidden]{display:none}
-.lightbox-thumbs{display:flex; gap:9px; max-width:100%; overflow-x:auto; padding:2px 2px 8px; scroll-behavior:smooth}
+.lightbox-thumbs{position:absolute; z-index:4; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:9px; width:max-content; max-width:min(720px,72vw); overflow-x:auto; padding:9px; border:1px solid rgba(255,255,255,.22); border-radius:12px; background:rgba(3,25,17,.48); backdrop-filter:blur(8px); opacity:.76; scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.55) transparent; transition:opacity .2s}
+.lightbox-thumbs:hover,.lightbox-thumbs:focus-within{opacity:1}
 .lightbox-thumbs button{flex:0 0 82px; height:58px; padding:0; overflow:hidden; border:2px solid transparent; border-radius:8px; background:#fff; opacity:.65; cursor:pointer}
 .lightbox-thumbs button.on{border-color:#fff; opacity:1}
 .lightbox-thumbs img{width:100%; height:100%; object-fit:cover}
@@ -1159,7 +1160,12 @@ $('#lightbox-x').addEventListener('click',closeImageLightbox);
 $('#lightbox-prev').addEventListener('click',()=>showLightboxImage(lightboxIndex-1));
 $('#lightbox-next').addEventListener('click',()=>showLightboxImage(lightboxIndex+1));
 $('#lightbox-thumbs').addEventListener('click',e=>{const b=e.target.closest('[data-lightbox-index]'); if(b)showLightboxImage(Number(b.dataset.lightboxIndex));});
-$('#lightbox-thumbs').addEventListener('wheel',e=>{if(e.shiftKey){e.preventDefault(); e.currentTarget.scrollLeft+=e.deltaY||e.deltaX;}},{passive:false});
+$('#image-lightbox').addEventListener('wheel',e=>{
+  if(!e.shiftKey)return;
+  const strip=$('#lightbox-thumbs'), delta=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;
+  if(strip.hidden||strip.scrollWidth<=strip.clientWidth||!delta)return;
+  e.preventDefault(); strip.scrollLeft+=delta;
+},{passive:false});
 bindBackdropClose($('#image-lightbox'),closeImageLightbox);
 
 /* ---- badges + representative-image (green) panels ---- */
