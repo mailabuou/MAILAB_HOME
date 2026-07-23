@@ -1138,9 +1138,10 @@ function showLightboxImage(index){
   $$('#lightbox-thumbs button').forEach((b,i)=>b.classList.toggle('on',i===lightboxIndex));
   const active=$(`#lightbox-thumbs button[data-lightbox-index="${lightboxIndex}"]`);
   if(active){
-    const strip=$('#lightbox-thumbs'), left=active.offsetLeft, right=left+active.offsetWidth;
-    if(left<strip.scrollLeft)strip.scrollTo({left:Math.max(0,left-9),behavior:'smooth'});
-    else if(right>strip.scrollLeft+strip.clientWidth)strip.scrollTo({left:right-strip.clientWidth+9,behavior:'smooth'});
+    const strip=$('#lightbox-thumbs'), stripRect=strip.getBoundingClientRect(), activeRect=active.getBoundingClientRect();
+    const visibleLeft=stripRect.left+9, visibleRight=stripRect.right-9;
+    if(activeRect.left<visibleLeft-1)strip.scrollLeft-=visibleLeft-activeRect.left;
+    else if(activeRect.right>visibleRight+1)strip.scrollLeft+=activeRect.right-visibleRight;
   }
 }
 function openImageLightbox(ref){
@@ -1166,6 +1167,7 @@ document.addEventListener('keydown',e=>{
 $('#lightbox-x').addEventListener('click',closeImageLightbox);
 $('#lightbox-prev').addEventListener('click',()=>showLightboxImage(lightboxIndex-1));
 $('#lightbox-next').addEventListener('click',()=>showLightboxImage(lightboxIndex+1));
+$('#lightbox-thumbs').addEventListener('pointerdown',e=>{if(e.target.closest('[data-lightbox-index]'))e.preventDefault();});
 $('#lightbox-thumbs').addEventListener('click',e=>{
   const b=e.target.closest('[data-lightbox-index]');
   if(b){showLightboxImage(Number(b.dataset.lightboxIndex)); b.blur();}
