@@ -169,7 +169,7 @@ section{padding:84px 0}
 .ncard{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#fff;
   transition:.25s; display:flex; flex-direction:column; position:relative}
 .ncard:hover{transform:translateY(-5px); box-shadow:var(--shadow); border-color:var(--sage)}
-.ncard .img{aspect-ratio:16/10; overflow:hidden}
+.ncard .img{position:relative; aspect-ratio:16/10; overflow:hidden}
 .ncard .img img{width:100%; height:100%; object-fit:cover}
 .ncard .img svg{width:100%; height:100%}
 .ncard .b{padding:20px 20px 22px; flex:1; display:flex; flex-direction:column}
@@ -242,7 +242,7 @@ section{padding:84px 0}
 .pub{display:grid; grid-template-columns:96px 1fr auto; gap:26px; padding:26px 8px; align-items:start;
   border-bottom:1px solid var(--line); transition:.22s; position:relative}
 .pub:hover{background:var(--mint); padding-left:18px; padding-right:18px}
-.pub .thumb{width:96px; height:76px; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
+.pub .thumb{position:relative; width:96px; height:76px; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
 .pub .thumb svg{width:100%; height:100%}
 .zoomable{position:relative; cursor:zoom-in}
 .zoomable::after{content:'⊕'; position:absolute; inset:0; display:grid; place-items:center; background:rgba(6,49,34,.52);
@@ -373,6 +373,7 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
 .gallery-edit button{position:relative; flex:0 0 74px; height:56px; padding:0; overflow:hidden; border:2px solid transparent; border-radius:8px; background:var(--mint); cursor:pointer}
 .gallery-edit button.on{border-color:var(--green)}
 .gallery-edit img{width:100%; height:100%; object-fit:cover}
+.media-play{position:absolute; inset:50% auto auto 50%; transform:translate(-50%,-50%); display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.7); color:#fff; font-size:13px; pointer-events:none}
 .gallery-edit .gallery-no{position:absolute; left:4px; bottom:3px; padding:1px 5px; border-radius:10px; background:rgba(3,25,17,.75); color:#fff; font:10px 'IBM Plex Mono'}
 .gallery-actions{display:flex; gap:7px; flex-wrap:wrap}
 .gallery-actions button{padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text-2); cursor:pointer}
@@ -381,6 +382,8 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
 .lightbox-stage{position:relative; width:min(1200px,92vw); height:min(900px,88vh)}
 .lightbox-main{position:absolute; inset:0; display:grid; place-items:center; min-height:0}
 .lightbox-main>img{max-width:100%; max-height:100%; object-fit:contain; border-radius:10px; background:#fff; box-shadow:var(--shadow-lg)}
+.lightbox-main>iframe{width:min(1120px,100%); aspect-ratio:16/9; max-height:100%; border:0; border-radius:10px; background:#000; box-shadow:var(--shadow-lg)}
+.lightbox-main>[hidden]{display:none}
 .lightbox-x{position:absolute; top:22px; right:24px; width:44px; height:44px; border:1px solid rgba(255,255,255,.45); border-radius:50%;
   background:rgba(0,0,0,.25); color:#fff; font-size:1.35rem; cursor:pointer}
 .lightbox-nav{position:absolute; top:50%; transform:translateY(-50%); width:48px; height:64px; border:1px solid rgba(255,255,255,.45); border-radius:12px; background:rgba(0,0,0,.38); color:#fff; font-size:2rem; cursor:pointer}
@@ -388,7 +391,7 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
 .lightbox-nav[hidden],.lightbox-thumbs[hidden]{display:none}
 .lightbox-thumbs{position:absolute; z-index:4; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:9px; width:max-content; max-width:min(720px,72vw); overflow-x:auto; padding:9px; border:1px solid rgba(255,255,255,.22); border-radius:12px; background:rgba(3,25,17,.48); backdrop-filter:blur(8px); opacity:.76; scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.55) transparent; transition:opacity .2s}
 .lightbox-thumbs:hover,.lightbox-thumbs:focus-within{opacity:1}
-.lightbox-thumbs button{flex:0 0 82px; height:58px; padding:0; overflow:hidden; border:2px solid transparent; border-radius:8px; background:#fff; opacity:.65; cursor:pointer}
+.lightbox-thumbs button{position:relative; flex:0 0 82px; height:58px; padding:0; overflow:hidden; border:2px solid transparent; border-radius:8px; background:#fff; opacity:.65; cursor:pointer}
 .lightbox-thumbs button:focus{outline:none}
 .lightbox-thumbs button.on{border-color:#fff; opacity:1}
 .lightbox-thumbs img{width:100%; height:100%; object-fit:cover}
@@ -743,6 +746,7 @@ body.editing .adminbar{display:flex} body.editing .fab{display:none}
     <div class="lightbox-main">
       <button class="lightbox-nav prev" id="lightbox-prev" aria-label="이전 이미지">‹</button>
       <img id="lightbox-img" alt="확대 이미지">
+      <iframe id="lightbox-video" title="YouTube 동영상" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen hidden></iframe>
       <button class="lightbox-nav next" id="lightbox-next" aria-label="다음 이미지">›</button>
     </div>
     <div class="lightbox-thumbs" id="lightbox-thumbs" aria-label="이미지 목록"></div>
@@ -1058,7 +1062,7 @@ function renderNews(){
   const rows=DB.news.map((n,idx)=>({n,idx})).filter(({n})=>newsCat==='전체'||n.cat===newsCat);
   $('#news-board').innerHTML=rows.length?rows.map(({n,idx},i)=>`
     <article class="ncard">${actionBtns('news',idx)}
-      <div class="img${n.img?' zoomable':''}"${n.img?` data-zoom="news:${idx}" role="button" tabindex="0" aria-label="이미지 확대 보기"`:''}>${n.img?`<img src="${esc(n.img)}" alt="">`:newsImg(i)}</div>
+      <div class="img${n.img?' zoomable':''}"${n.img?` data-zoom="news:${idx}" role="button" tabindex="0" aria-label="${primaryIsVideo(n)?'동영상 재생':'이미지 확대 보기'}"`:''}>${n.img?`<img src="${esc(n.img)}" alt="">${primaryIsVideo(n)?'<span class="media-play">▶</span>':''}`:newsImg(i)}</div>
       <div class="b"><div class="meta"><span class="cat">${esc(n.cat)}</span><time>${esc(n.date)}</time></div>
         <h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></div></article>`).join('') : `<div class="empty">// 해당 분류의 소식이 없습니다</div>`;
   renderNewsHome();
@@ -1109,7 +1113,7 @@ function makeBoard(key, boardId, filtersId, searchId){
       return okY&&hay.includes(term);
     }).sort((a,b)=>b.d.year-a.d.year);
     $('#'+boardId).innerHTML=rows.length?rows.map(({d,idx},i)=>`
-      <article class="pub"><div class="thumb${d.img?' zoomable':''}"${d.img?` data-zoom="${key}:${idx}" role="button" tabindex="0" aria-label="이미지 확대 보기"`:''}>${d.img?`<img src="${esc(d.img)}" alt="" style="width:100%;height:100%;object-fit:cover">`:tileSVG(Object.values(HUES)[i%3], d.year+i)}</div>
+      <article class="pub"><div class="thumb${d.img?' zoomable':''}"${d.img?` data-zoom="${key}:${idx}" role="button" tabindex="0" aria-label="${primaryIsVideo(d)?'동영상 재생':'이미지 확대 보기'}"`:''}>${d.img?`<img src="${esc(d.img)}" alt="" style="width:100%;height:100%;object-fit:cover">${primaryIsVideo(d)?'<span class="media-play">▶</span>':''}`:tileSVG(Object.values(HUES)[i%3], d.year+i)}</div>
         <div><div class="yr">${esc(d.year)}${(d.badges||[]).map(b=>`<span class="badge-pill${String(b).includes('%')?' pct':''}">${esc(b)}</span>`).join('')}</div><h3>${esc(d.title)}</h3><div class="auth">${bold(d.authors)}</div>
           <div class="venue">${esc(d.venue)}</div><div class="ptags">${(d.tags||[]).map(t=>`<span class="pt">${esc(t)}</span>`).join('')}</div></div>
         <div class="links">${(d.links||[]).map(linkData).map(l=>`<a class="plink" href="${esc(l.url)}" target="_blank" rel="noopener">${linkIcon}${esc(l.label)}</a>`).join('')}${actionBtns(key,idx)}</div>
@@ -1123,6 +1127,25 @@ const paperBoard=makeBoard('papers','paper-board','paper-filters','paper-search'
 const patentBoard=makeBoard('patents','patent-board','patent-filters','patent-search');
 
 let lightboxImages=[], lightboxIndex=0, lightboxWheelDelta=0, lightboxWheelDirection=0;
+function youtubeVideoId(value){
+  try{
+    const url=new URL(String(value||'').trim()), host=url.hostname.toLowerCase().replace(/^www\./,'');
+    let id='';
+    if(host==='youtu.be')id=url.pathname.split('/').filter(Boolean)[0]||'';
+    else if(host==='youtube.com'||host.endsWith('.youtube.com')){
+      id=url.searchParams.get('v')||'';
+      if(!id){const p=url.pathname.split('/').filter(Boolean); if(['embed','shorts','live'].includes(p[0]))id=p[1]||'';}
+    }
+    return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';
+  }catch(_){return '';}
+}
+const youtubeThumb=id=>`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+const isYoutubeMedia=media=>!!(media&&media.type==='youtube'&&media.videoId);
+function youtubeMedia(url){
+  const videoId=youtubeVideoId(url);
+  return videoId?{type:'youtube',videoId,original:String(url).trim(),display:youtubeThumb(videoId),crop:null}:null;
+}
+const primaryIsVideo=item=>isYoutubeMedia(itemGallery(item)[0]);
 function itemGallery(item){
   if(!item)return [];
   if(Array.isArray(item.images)&&item.images.length)return item.images.map(v=>typeof v==='string'?{original:v,display:v}:v).filter(v=>v&&(v.original||v.display));
@@ -1134,7 +1157,13 @@ function showLightboxImage(index){
   if(!lightboxImages.length)return;
   lightboxIndex=(index+lightboxImages.length)%lightboxImages.length;
   const current=lightboxImages[lightboxIndex];
-  $('#lightbox-img').src=current.original||current.display;
+  const video=isYoutubeMedia(current), img=$('#lightbox-img'), player=$('#lightbox-video');
+  if(video){
+    img.hidden=true; img.removeAttribute('src'); player.hidden=false;
+    player.src=`https://www.youtube-nocookie.com/embed/${current.videoId}?autoplay=1&rel=0`;
+  }else{
+    player.src=''; player.hidden=true; img.hidden=false; img.src=current.original||current.display;
+  }
   $$('#lightbox-thumbs button').forEach((b,i)=>b.classList.toggle('on',i===lightboxIndex));
   const active=$(`#lightbox-thumbs button[data-lightbox-index="${lightboxIndex}"]`);
   if(active){
@@ -1150,11 +1179,12 @@ function openImageLightbox(ref){
   lightboxWheelDelta=0; lightboxWheelDirection=0;
   const multi=lightboxImages.length>1;
   $('#lightbox-prev').hidden=!multi; $('#lightbox-next').hidden=!multi; $('#lightbox-thumbs').hidden=!multi;
-  $('#lightbox-thumbs').innerHTML=lightboxImages.map((v,i)=>`<button type="button" data-lightbox-index="${i}" aria-label="${i+1}번 이미지"><img src="${esc(v.display||v.original)}" alt=""></button>`).join('');
+  $('#lightbox-thumbs').innerHTML=lightboxImages.map((v,i)=>`<button type="button" data-lightbox-index="${i}" aria-label="${i+1}번 ${isYoutubeMedia(v)?'동영상':'이미지'}"><img src="${esc(v.display||v.original)}" alt="">${isYoutubeMedia(v)?'<span class="media-play">▶</span>':''}</button>`).join('');
   showLightboxImage(0); $('#image-lightbox').classList.add('open'); $('#image-lightbox').setAttribute('aria-hidden','false');
 }
 function closeImageLightbox(){
   $('#image-lightbox').classList.remove('open'); $('#image-lightbox').setAttribute('aria-hidden','true'); $('#lightbox-img').removeAttribute('src');
+  $('#lightbox-video').src=''; $('#lightbox-video').hidden=true; $('#lightbox-img').hidden=false;
   lightboxImages=[]; lightboxWheelDelta=0; lightboxWheelDirection=0;
 }
 document.addEventListener('click',e=>{const z=e.target.closest('[data-zoom]'); if(z)openImageLightbox(z.dataset.zoom);});
@@ -1309,10 +1339,11 @@ const supportsGallery=type=>['papers','patents','news'].includes(type);
 const cropKeys=type=>type==='people'||type==='prof'?{original:'photoOriginal',crop:'photoCrop'}:{original:'imgOriginal',crop:'imgCrop'};
 const cropSize=type=>type==='prof'?{w:640,h:800}:type==='news'?{w:960,h:600}:(type==='papers'||type==='patents'?{w:960,h:760}:{w:800,h:800});
 function normalizedGallery(item,keys,imgKey){
-  if(Array.isArray(item.images)&&item.images.length)return item.images.map(v=>typeof v==='string'?{original:v,display:v,crop:null}:{original:v.original||v.display||'',display:v.display||v.original||'',crop:v.crop||null}).filter(v=>v.original);
+  if(Array.isArray(item.images)&&item.images.length)return item.images.map(v=>typeof v==='string'?{original:v,display:v,crop:null}:{...v,original:v.original||v.display||'',display:v.display||v.original||'',crop:v.crop||null}).filter(v=>v.original);
   const original=item[keys.original]||item[imgKey]||'';
   return original?[{original,display:item[imgKey]||original,crop:item[keys.crop]||null}]:[];
 }
+const editorMediaSource=media=>isYoutubeMedia(media)?media.display:media.original;
 function openForm(type, idx){
   const sch=SCHEMA[type]; if(!sch)return; const single=!!sch.single; const storeKey=sch.store||type;
   const item=single?(DB[storeKey]||{}):(idx!=null?DB[type][idx]:{});
@@ -1323,7 +1354,7 @@ function openForm(type, idx){
   formCtx={type, idx, single, storeKey, imgKey:imgField?imgField.k:null,
     img:supportsCrop(type)?(item[keys.original]||savedImg):savedImg,
     cropSaved:supportsCrop(type)?(item[keys.crop]||null):null,originalKey:keys.original,cropKey:keys.crop,gallery,galleryIndex:0};
-  if(gallery.length){formCtx.img=gallery[0].original; formCtx.cropSaved=gallery[0].crop;}
+  if(gallery.length){formCtx.img=editorMediaSource(gallery[0]); formCtx.cropSaved=gallery[0].crop;}
   $('#modal-title').textContent=(single||idx!=null?'수정 · ':'추가 · ')+sch.title;
   $('#modal-fields').innerHTML=sch.fields.map(f=>{
     const v=item[f.k];
@@ -1336,15 +1367,15 @@ function openForm(type, idx){
       return `<div class="field"><label>${esc(f.label)}</label><textarea data-k="${f.k}" data-links="1" placeholder="URL만 입력하거나, 버튼이름|URL">${esc(val)}</textarea><div class="hint" style="margin-top:5px">예: https://patents.google.com/... 또는 Google Patents|https://patents.google.com/...</div></div>`;}
     if(f.type==='image') return `<div class="field"><label>${esc(f.label)}</label><div class="img-field">
         ${supportsGallery(type)?`<div class="gallery-edit" id="galleryedit"></div>
-          <div class="gallery-actions"><button type="button" id="galleryprev">← 앞으로</button><button type="button" id="gallerynext">뒤로 →</button><button type="button" id="galleryremove">선택 사진 삭제</button></div>
-          <div class="hint" style="margin:0">첫 번째 사진이 홈페이지의 대표 이미지로 표시됩니다. 썸네일을 눌러 사진별 위치와 확대 비율을 조정하세요.</div>`:''}
+          <div class="gallery-actions"><button type="button" id="galleryprev">← 앞으로</button><button type="button" id="gallerynext">뒤로 →</button><button type="button" id="galleryremove">선택 미디어 삭제</button></div>
+          <div class="hint" style="margin:0">첫 번째 미디어가 홈페이지의 대표 이미지로 표시됩니다. 이미지와 YouTube 영상을 섞어 순서를 정할 수 있습니다.</div>`:''}
         ${supportsCrop(type)?`<div class="crop-wrap${['papers','patents','news'].includes(type)?' pub-crop':''}"><div class="hint" style="margin:0;text-align:center">홈페이지 카드에 표시되는 모습</div><canvas class="crop-canvas" id="cropcanvas" width="${size.w}" height="${size.h}"></canvas>
           <div class="crop-tools"><span>축소</span><input id="cropzoom" type="range" min="1" max="3" step="0.01" value="1"><span>확대</span></div>
           <div class="hint" style="margin:0">사진을 드래그해 표시할 영역을 정하고, 슬라이더로 확대할 수 있습니다.</div></div>`:
           `<div class="img-prev" id="imgprev">${formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기'}</div>`}
-        <input type="file" accept="image/*" id="imgfile"${supportsGallery(type)?' multiple':''}><input type="text" id="imgurl" placeholder="${supportsGallery(type)?'이미지 URL을 입력하고 Enter 또는 포커스 이동으로 추가':'또는 이미지 URL 붙여넣기'}" value="${!supportsGallery(type)&&formCtx.img&&formCtx.img.indexOf('data:')!==0?esc(formCtx.img):''}">
-        <div class="img-actions"><button type="button" class="img-remove" id="imgremove"${formCtx.img?'':' hidden'}>사진 삭제 · 기본 이미지로 복원</button></div></div>
-        <div class="hint">파일을 올리면 사진이 파일 안에 함께 저장됩니다.</div></div>`;
+        <input type="file" accept="image/*" id="imgfile"${supportsGallery(type)?' multiple':''}><input type="text" id="imgurl" placeholder="${supportsGallery(type)?'이미지 URL 또는 YouTube 링크를 입력해 추가':'또는 이미지 URL 붙여넣기'}" value="${!supportsGallery(type)&&formCtx.img&&formCtx.img.indexOf('data:')!==0?esc(formCtx.img):''}">
+        <div class="img-actions"><button type="button" class="img-remove" id="imgremove"${formCtx.img?'':' hidden'}>${supportsGallery(type)?'모든 미디어 삭제':'사진 삭제'} · 기본 이미지로 복원</button></div></div>
+        <div class="hint">${supportsGallery(type)?'업로드한 사진은 데이터에 저장되고, YouTube 영상은 링크와 썸네일만 저장됩니다.':'파일을 올리면 사진이 파일 안에 함께 저장됩니다.'}</div></div>`;
     return `<div class="field"><label>${esc(f.label)}</label><input type="${f.type}" data-k="${f.k}" value="${esc(v==null?'':v)}"></div>`;
   }).join('');
   const fileEl=$('#imgfile');
@@ -1367,7 +1398,11 @@ function openForm(type, idx){
     $('#imgurl').addEventListener('change',e=>{
       const src=e.target.value.trim();
       if(supportsGallery(type)){
-        if(!src)return; syncActiveGallery(); formCtx.gallery.push({original:src,display:src,crop:null}); selectGalleryImage(formCtx.gallery.length-1); e.target.value='';
+        if(!src)return;
+        const video=youtubeMedia(src);
+        if(/(?:youtu\.be|youtube\.com)/i.test(src)&&!video){toast('올바른 YouTube 동영상 링크를 입력해 주세요.'); return;}
+        syncActiveGallery(); formCtx.gallery.push(video||{type:'image',original:src,display:src,crop:null});
+        selectGalleryImage(formCtx.gallery.length-1); e.target.value='';
       }else{
         formCtx.img=src; formCtx.cropSaved=null; $('#imgremove').hidden=!formCtx.img;
         if(supportsCrop(type)&&formCtx.img)initCrop(formCtx.img); else if(supportsCrop(type)){cropCtx=null; const c=$('#cropcanvas'); c.getContext('2d').clearRect(0,0,c.width,c.height);} else $('#imgprev').innerHTML=formCtx.img?`<img src="${esc(formCtx.img)}">`:'미리보기';
@@ -1389,11 +1424,11 @@ function openForm(type, idx){
     }
   }
   $('#modal').classList.add('open');
-  cropCtx=null; if(supportsCrop(type)&&formCtx.img)initCrop(formCtx.img,formCtx.cropSaved);
+  cropCtx=null; if(supportsCrop(type)&&formCtx.img)initCrop(formCtx.img,formCtx.cropSaved,supportsGallery(type)&&isYoutubeMedia(formCtx.gallery[0]));
 }
 function renderGalleryEditor(){
   const strip=$('#galleryedit'); if(!strip)return;
-  strip.innerHTML=formCtx.gallery.map((v,i)=>`<button type="button" class="${i===formCtx.galleryIndex?'on':''}" data-gallery-index="${i}" aria-label="${i+1}번 사진 편집"><img src="${esc(v.display||v.original)}" alt=""><span class="gallery-no">${i+1}${i===0?' · 대표':''}</span></button>`).join('');
+  strip.innerHTML=formCtx.gallery.map((v,i)=>`<button type="button" class="${i===formCtx.galleryIndex?'on':''}" data-gallery-index="${i}" aria-label="${i+1}번 ${isYoutubeMedia(v)?'동영상':'사진'} 편집"><img src="${esc(v.display||v.original)}" alt="">${isYoutubeMedia(v)?'<span class="media-play">▶</span>':''}<span class="gallery-no">${i+1}${i===0?' · 대표':''}</span></button>`).join('');
   const has=formCtx.gallery.length>0, i=formCtx.galleryIndex;
   $('#galleryprev').disabled=!has||i===0; $('#gallerynext').disabled=!has||i===formCtx.gallery.length-1; $('#galleryremove').disabled=!has;
   $('#imgremove').hidden=!has;
@@ -1401,6 +1436,7 @@ function renderGalleryEditor(){
 function syncActiveGallery(){
   if(!supportsGallery(formCtx.type)||!formCtx.gallery.length)return;
   const current=formCtx.gallery[formCtx.galleryIndex]; if(!current)return;
+  if(isYoutubeMedia(current)){current.crop=null; current.display=youtubeThumb(current.videoId); return;}
   current.original=formCtx.img||current.original;
   current.crop=cropCtx?{zoom:cropCtx.zoom,x:cropCtx.x,y:cropCtx.y}:null;
   current.display=cropCtx?croppedImage():(current.original||'');
@@ -1408,8 +1444,8 @@ function syncActiveGallery(){
 function selectGalleryImage(index){
   if(index<0||index>=formCtx.gallery.length)return;
   syncActiveGallery(); formCtx.galleryIndex=index;
-  const current=formCtx.gallery[index]; formCtx.img=current.original; formCtx.cropSaved=current.crop||null;
-  cropCtx=null; initCrop(current.original,current.crop); renderGalleryEditor();
+  const current=formCtx.gallery[index]; formCtx.img=editorMediaSource(current); formCtx.cropSaved=current.crop||null;
+  cropCtx=null; initCrop(formCtx.img,current.crop,isYoutubeMedia(current)); renderGalleryEditor();
 }
 function moveGalleryImage(direction){
   if(!formCtx.gallery.length)return; syncActiveGallery();
@@ -1422,8 +1458,8 @@ function removeGalleryImage(){
   formCtx.gallery.splice(formCtx.galleryIndex,1); cropCtx=null;
   if(formCtx.gallery.length){
     formCtx.galleryIndex=Math.min(formCtx.galleryIndex,formCtx.gallery.length-1);
-    const current=formCtx.gallery[formCtx.galleryIndex]; formCtx.img=current.original; formCtx.cropSaved=current.crop||null;
-    initCrop(current.original,current.crop);
+    const current=formCtx.gallery[formCtx.galleryIndex]; formCtx.img=editorMediaSource(current); formCtx.cropSaved=current.crop||null;
+    initCrop(formCtx.img,current.crop,isYoutubeMedia(current));
   }else{
     formCtx.galleryIndex=0; formCtx.img=''; formCtx.cropSaved=null;
     const c=$('#cropcanvas'); if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);
@@ -1437,14 +1473,15 @@ function clearGallery(){
   renderGalleryEditor(); toast('모든 사진을 제거했습니다. 저장하면 기본 이미지로 복원됩니다.');
 }
 function closeForm(){$('#modal').classList.remove('open');}
-function initCrop(src,saved=null){
+function initCrop(src,saved=null,locked=false){
   const canvas=$('#cropcanvas'); if(!canvas)return;
   const img=new Image();
   img.onload=()=>{
     cropCtx={img,zoom:Number(saved&&saved.zoom)||1,x:Number(saved&&saved.x)||0,y:Number(saved&&saved.y)||0,drag:false,lastX:0,lastY:0};
-    const slider=$('#cropzoom'); slider.value=cropCtx.zoom;
+    const slider=$('#cropzoom'); slider.value=cropCtx.zoom; slider.disabled=locked;
     slider.oninput=()=>{cropCtx.zoom=Number(slider.value); clampCrop(); drawCrop();};
-    canvas.onpointerdown=e=>{cropCtx.drag=true; cropCtx.lastX=e.clientX; cropCtx.lastY=e.clientY; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');};
+    canvas.style.cursor=locked?'default':'grab';
+    canvas.onpointerdown=e=>{if(locked)return; cropCtx.drag=true; cropCtx.lastX=e.clientX; cropCtx.lastY=e.clientY; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');};
     canvas.onpointermove=e=>{if(!cropCtx.drag)return; const s=canvas.width/canvas.getBoundingClientRect().width; cropCtx.x+=(e.clientX-cropCtx.lastX)*s; cropCtx.y+=(e.clientY-cropCtx.lastY)*s; cropCtx.lastX=e.clientX; cropCtx.lastY=e.clientY; clampCrop(); drawCrop();};
     canvas.onpointerup=canvas.onpointercancel=()=>{cropCtx.drag=false; canvas.classList.remove('dragging');};
     clampCrop(); drawCrop();
