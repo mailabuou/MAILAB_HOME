@@ -1160,7 +1160,7 @@ function showLightboxImage(index){
   const video=isYoutubeMedia(current), img=$('#lightbox-img'), player=$('#lightbox-video');
   if(video){
     img.hidden=true; img.removeAttribute('src'); player.hidden=false;
-    player.src=`https://www.youtube-nocookie.com/embed/${current.videoId}?autoplay=1&rel=0`;
+    player.src=`https://www.youtube-nocookie.com/embed/${current.videoId}?rel=0`;
   }else{
     player.src=''; player.hidden=true; img.hidden=false; img.src=current.original||current.display;
   }
