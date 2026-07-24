@@ -954,8 +954,8 @@ async function loadDriveDB(quiet=false){
   if(!driveConfigured())return false;
   try{
     const payload=await fetchDrivePayload(false); driveRevision=Number(payload.revision)||0; applyDB(payload.data);
-    if(!quiet)toast('Google Drive의 최신 홈페이지 데이터를 불러왔습니다.'); return true;
-  }catch(err){console.error(err); if(!quiet)toast(err.message+' 내장 데이터를 표시합니다.'); return false;}
+    if(!quiet)toast('최신 정보를 불러왔습니다.'); return true;
+  }catch(err){console.error(err); if(!quiet)toast('정보를 불러오지 못해 기본 내용을 표시합니다.'); return false;}
 }
 async function saveDriveDB(){
   if(driveSyncing){toast('Google Drive 저장이 진행 중입니다.');return false;}
